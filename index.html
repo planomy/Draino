@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChromaVex — Word & Colours</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --tile-size: 3.8rem; }
+    body { font-family: 'Inter', sans-serif; touch-action: manipulation; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    .tile {
+      transition: transform .12s ease, filter .12s ease, box-shadow .18s ease;
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / .2), 0 2px 4px -2px rgb(0 0 0 / .2);
+      font-size: calc(var(--tile-size) * .55);
+      border-radius: 0.75rem;
+      letter-spacing: .5px;
+      width: var(--tile-size); height: var(--tile-size);
+    }
+    .tile.selected { transform: scale(1.08); filter: brightness(1.18); }
+
+    .tank { width: 20px; height: 70vh; background: linear-gradient(to top, #111, #333); border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 0 8px rgba(255,255,255,0.1), 0 0 8px rgba(0,0,0,0.5); }
+    .tank-fill { position: absolute; bottom: 0; width: 100%; border-radius: 12px; transition: height 0.4s ease, filter 0.25s ease; }
+    .tank-fill.red { background: linear-gradient(to top, #b91c1c, #f87171); }
+    .tank-fill.blue { background: linear-gradient(to top, #1d4ed8, #60a5fa); }
+    .tank-fill.green { background: linear-gradient(to top, #15803d, #4ade80); }
+
+    #word-display, #message { height: 2.5rem; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+  <div id="game-container" class="w-full max-w-5xl mx-auto flex items-center gap-10">
+    <div id="banks" class="flex flex-row items-end justify-center gap-4 mr-2">
+      <div class="tank"><div id="red-bank" class="tank-fill red" style="height:100%"></div></div>
+      <div class="tank"><div id="blue-bank" class="tank-fill blue" style="height:100%"></div></div>
+      <div class="tank"><div id="green-bank" class="tank-fill green" style="height:100%"></div></div>
+    </div>
+
+    <div class="flex flex-col items-center">
+      <header class="text-center mb-4">
+        <h1 class="text-5xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-lg">ChromaVex</h1>
+        <p id="subtitle" class="text-gray-400 text-lg mt-1">Find words to restore the coloured banks before they drain away!</p>
+        <p id="score" class="text-yellow-400 text-xl mt-2 font-bold">Score: 0</p>
+      </header>
+
+      <div class="grid grid-cols-5 gap-2 justify-center" id="grid-container"></div>
+      <p id="word-display" class="text-center text-3xl mt-4 font-bold tracking-widest text-gray-200"></p>
+      <p id="message" class="text-center text-lg font-semibold"></p>
+    </div>
+  </div>
+
+  <script>
+    const GRID_SIZE = 5;
+    const MIN_WORD_LENGTH = 3; // only accept words with 3+ letters
+    const MIN_VOWELS = 7; // minimum vowels
+    const MAX_VOWELS = 10; // maximum vowels
+    const VOWELS = 'aaaaaaaeeeeeeeeeeeeiiiiiiiiooooooouuuu';
+    const CONSONANTS = 'bbcccdddffgghhhkklllmmmnnnnnppprrrrrrssssstttttvvwwwyy';
+
+    const COLORS = [
+      { name: 'red', class: 'bg-red-500' },
+      { name: 'blue', class: 'bg-blue-500' },
+      { name: 'green', class: 'bg-green-500' }
+    ];
+
+    let wordSet = new Set();
+    fetch('https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt')
+      .then(r => r.text())
+      .then(data => data.split('\n').forEach(w => w && wordSet.add(w.trim())));
+
+    let grid = [];
+    let currentSelection = [];
+    let isSelecting = false;
+    let colourBanks = { red: 10, blue: 10, green: 10 };
+    const maxBank = 10;
+    let drainInterval;
+    let score = 0;
+
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+    function generateLetters(){
+      const totalTiles = GRID_SIZE * GRID_SIZE;
+      const vowelCount = Math.floor(Math.random() * (MAX_VOWELS - MIN_VOWELS + 1)) + MIN_VOWELS;
+      const consonantCount = totalTiles - vowelCount;
+      const letters = [];
+      for(let i=0;i<vowelCount;i++) letters.push(VOWELS[Math.floor(Math.random()*VOWELS.length)]);
+      for(let i=0;i<consonantCount;i++) letters.push(CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)]);
+      return shuffle(letters);
+    }
+
+    function generateGrid(){
+      const letters = generateLetters();
+      const colorDistribution = [];
+      for (let i = 0; i < 8; i++) colorDistribution.push(COLORS[0]);
+      for (let i = 0; i < 8; i++) colorDistribution.push(COLORS[1]);
+      for (let i = 0; i < 9; i++) colorDistribution.push(COLORS[2]);
+      const colours = shuffle(colorDistribution);
+
+      const gridContainer = document.getElementById('grid-container');
+      gridContainer.innerHTML='';
+      grid=[];
+      for(let i=0;i<GRID_SIZE*GRID_SIZE;i++){
+        const tile={ id:`tile-${i}`, letter:letters[i], colorName:colours[i].name };
+        grid.push(tile);
+        const el=document.createElement('div');
+        el.id=tile.id;
+        el.dataset.index=String(i);
+        el.className=`tile ${COLORS.find(c=>c.name===tile.colorName).class} flex items-center justify-center font-bold cursor-pointer`;
+        el.textContent=tile.letter.toUpperCase();
+        el.addEventListener('mousedown',startSelection);
+        el.addEventListener('mouseover',continueSelection);
+        el.addEventListener('touchstart',startSelectionTouch,{passive:false});
+        el.addEventListener('touchmove',continueSelectionTouch,{passive:false});
+        gridContainer.appendChild(el);
+      }
+      window.addEventListener('mouseup',endSelection);
+      window.addEventListener('touchend',endSelection);
+      renderBanks();
+      startDrain();
+    }
+
+    function renderBanks(){
+      for(const c of COLORS){
+        const fill=document.getElementById(`${c.name}-bank`);
+        fill.style.height=`${(colourBanks[c.name]/maxBank)*100}%`;
+        fill.style.filter = `brightness(${0.7 + colourBanks[c.name]/maxBank * 0.3})`;
+      }
+      document.getElementById('score').textContent = `Score: ${score}`;
+    }
+
+    function drainBanks(){
+      COLORS.forEach(c=>{ colourBanks[c.name]=Math.max(0,colourBanks[c.name]-0.1); });
+      renderBanks();
+      if(Object.values(colourBanks).every(v=>v<=0)){ clearInterval(drainInterval); alert(`All colours drained! Game over. Final Score: ${score}`); }
+    }
+
+    function startDrain(){ clearInterval(drainInterval); drainInterval=setInterval(drainBanks,1000); }
+
+    function startSelection(e){ e.preventDefault(); isSelecting=true; resetSelection(); const el=e.target.closest('.tile'); if(el) selectTile(el); }
+    function continueSelection(e){ if(!isSelecting) return; const el=e.target.closest('.tile'); if(el && !currentSelection.includes(el)) selectTile(el); }
+    function startSelectionTouch(e){ e.preventDefault(); isSelecting=true; resetSelection(); const t=e.touches[0]; const el=document.elementFromPoint(t.clientX,t.clientY)?.closest('.tile'); if(el) selectTile(el); }
+    function continueSelectionTouch(e){ if(!isSelecting) return; e.preventDefault(); const t=e.touches[0]; const el=document.elementFromPoint(t.clientX,t.clientY)?.closest('.tile'); if(el && !currentSelection.includes(el)) selectTile(el); }
+    function endSelection(){ if(!isSelecting) return; isSelecting=false; if(currentSelection.length>=MIN_WORD_LENGTH) validateWord(); else resetSelection(); }
+
+    function selectTile(el){ el.classList.add('selected'); currentSelection.push(el); document.getElementById('word-display').textContent=currentSelection.map(t=>t.textContent).join(''); }
+    function resetSelection(){ currentSelection.forEach(t=>t.classList.remove('selected')); currentSelection=[]; document.getElementById('word-display').textContent=''; }
+
+    function validateWord(){
+      const word=currentSelection.map(t=>t.textContent.toLowerCase()).join('');
+      if(word.length < MIN_WORD_LENGTH){ showMessage('Word too short!','text-yellow-400'); resetSelection(); return; }
+      if(word && wordSet.has(word)){
+        const colorCounts={ red:0, blue:0, green:0 };
+        currentSelection.forEach(el=>{ const idx=Number(el.dataset.index); colorCounts[grid[idx].colorName]++; });
+        for(const color in colorCounts){
+          if(colorCounts[color]>0){
+            colourBanks[color]=Math.min(maxBank, colourBanks[color]+colorCounts[color]);
+          }
+        }
+        score += currentSelection.length;
+        showMessage(`+${currentSelection.length} pts | Restored ${Object.entries(colorCounts).filter(([_,v])=>v>0).map(([k,v])=>`${v} ${k}`).join(', ')}`,'text-green-400');
+        replaceUsedTiles();
+      } else {
+        showMessage('Not a valid word!','text-red-400');
+      }
+      resetSelection();
+      renderBanks();
+    }
+
+    function replaceUsedTiles(){
+      const letters = generateLetters(); let li=0;
+      const usedColorNames = currentSelection.map(el=>grid[Number(el.dataset.index)].colorName);
+      currentSelection.forEach(el=>{
+        const idx=Number(el.dataset.index);
+        grid[idx].letter = letters[li++ % letters.length];
+        el.textContent = grid[idx].letter.toUpperCase();
+        const newName = usedColorNames[Math.floor(Math.random()*usedColorNames.length)];
+        grid[idx].colorName = newName;
+        const cls = COLORS.find(c=>c.name===newName).class;
+        el.className = `tile ${cls} flex items-center justify-center font-bold cursor-pointer`;
+      });
+      balanceColors();
+    }
+
+    function balanceColors(){
+      const counts = { red:0, blue:0, green:0 };
+      for(let i=0;i<grid.length;i++){ counts[grid[i].colorName]++; }
+      const minCount = 8;
+      for(const c of COLORS){
+        while(counts[c.name]<minCount){
+          const donor = COLORS.find(x=>counts[x.name]>minCount);
+          if(!donor) break;
+          const donorIndex = grid.findIndex(t=>t.colorName===donor.name);
+          grid[donorIndex].colorName = c.name;
+          const el=document.getElementById(grid[donorIndex].id); const cls=COLORS.find(x=>x.name===c.name).class; const dcls=COLORS.find(x=>x.name===donor.name).class;
+          el.classList.remove(dcls); el.classList.add(cls);
+          counts[c.name]++; counts[donor.name]--;
+        }
+      }
+    }
+
+    function showMessage(msg,cls){ const m=document.getElementById('message'); m.className=`text-center ${cls}`; m.textContent=msg; setTimeout(()=>m.textContent='',900); }
+
+    (function tests(){
+      console.group('%cChromaVex tests','color:#a78bfa;font-weight:bold');
+      generateGrid();
+      const counts={red:0,blue:0,green:0}; grid.forEach(t=>counts[t.colorName]++);
+      console.assert(counts.red>=8 && counts.blue>=8 && counts.green>=8, 'initial colour distribution should be >=8 each');
+      console.groupEnd();
+    })();
+  </script>
+</body>
+</html>
