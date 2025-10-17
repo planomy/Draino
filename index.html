@@ -352,13 +352,6 @@
       const vowelCount = 9 + Math.floor(Math.random() * 2); // Guarantees 9 or 10 vowels
       const consonantCount = totalTiles - vowelCount;
       const letters = [];
-      for(let i=0;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
-
-    function generateLetters(){
-      const totalTiles = GRID_SIZE * GRID_SIZE;
-      const vowelCount = 9 + Math.floor(Math.random() * 2); // Guarantees 9 or 10 vowels
-      const consonantCount = totalTiles - vowelCount;
-      const letters = [];
       for(let i=0;i<vowelCount;i++) letters.push(VOWELS[Math.floor(Math.random()*VOWELS.length)]);
       for(let i=0;i<consonantCount;i++) letters.push(CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)]);
       return shuffle(letters);
@@ -646,7 +639,7 @@
 
         for (const color of COLORS) {
             while (counts[color.name] < minCount) {
-                const donorColor = COLORS.find(c => c.name > minCount);
+                const donorColor = COLORS.find(c => counts[c.name] > minCount);
                 if (!donorColor) break;
 
                 const donorIndex = grid.findIndex(t => t.colorName === donorColor.name);
@@ -725,6 +718,4 @@
   </script>
 </body>
 </html>
-
-
 
