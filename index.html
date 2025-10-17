@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-        --tile-size: 3.04rem; /* Reduced from 3.8rem */
+        --tile-size: clamp(2.2rem, 8vw, 4rem); /* Responsive tile size */
         --red-color: #ef4444;
         --blue-color: #3b82f6;
         --green-color: #22c55e;
@@ -45,7 +45,7 @@
     .tile.bg-blue-500 { background-color: var(--blue-color); }
     .tile.bg-green-500 { background-color: var(--green-color); }
 
-    .tank { width: 20px; height: 17.2rem; /* Aligned with grid height */ background: linear-gradient(to top, #111, #333); border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 0 8px rgba(255,255,255,0.1), 0 0 8px rgba(0,0,0,0.5); transition: background-color .4s ease, border-color .4s ease; border: 2px solid transparent; }
+    .tank { width: 20px; height: calc(var(--tile-size) * 5 + 0.5rem * 4); /* Aligned with grid height */ background: linear-gradient(to top, #111, #333); border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 0 8px rgba(255,255,255,0.1), 0 0 8px rgba(0,0,0,0.5); transition: background-color .4s ease, border-color .4s ease; border: 2px solid transparent; }
     .tank-fill { position: absolute; bottom: 0; width: 100%; border-radius: 12px; transition: height 0.4s ease, filter 0.25s ease, background .4s ease; will-change: height, filter; }
     .tank-fill.red { background: linear-gradient(to top, var(--red-color), var(--red-color)); }
     .tank-fill.blue { background: linear-gradient(to top, var(--blue-color), var(--blue-color)); }
@@ -719,4 +719,5 @@
   </script>
 </body>
 </html>
+
 
