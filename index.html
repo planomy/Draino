@@ -83,7 +83,9 @@
       .tank {
         width: 100%;
         height: 20px;
-        background: #111; /* Add this line */
+        background: #111;
+        box-shadow: none;
+        border-radius: 8px;
       }
       .tank-fill {
         right: 0;
@@ -92,7 +94,11 @@
         height: 100%;
         transition: width 0.4s ease, filter 0.25s ease, background .4s ease;
         will-change: width, filter;
+        border-radius: 8px;
       }
+      .tank-fill.red { background: var(--red-color); }
+      .tank-fill.blue { background: var(--blue-color); }
+      .tank-fill.green { background: var(--green-color); }
     }
   </style>
 </head>
@@ -744,6 +750,7 @@
   </script>
 </body>
 </html>
+
 
 
 
