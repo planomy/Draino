@@ -8,7 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-        --tile-size: clamp(2.5rem, 15vmin, 5rem); /* Switched to vmin for better tablet scaling */
+        --tile-size: clamp(2.5rem, 15vmin, 5rem);
         --red-color: #ef4444;
         --blue-color: #3b82f6;
         --green-color: #22c55e;
@@ -17,7 +17,7 @@
         --modal-bg-color: #1f2937;
     }
 
-    body { font-family: 'Inter', sans-serif; touch-action: manipulation; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; background-color: var(--bg-color); color: var(--text-color); transition: background-color .4s ease, color .4s ease; }
+    body { font-family: 'Inter', sans-serif; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; background-color: var(--bg-color); color: var(--text-color); transition: background-color .4s ease, color .4s ease; }
     .tile {
       transition: transform .12s ease, filter .12s ease, box-shadow .18s ease, background-color .4s ease, border-color .4s ease;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / .2), 0 2px 4px -2px rgb(0 0 0 / .2);
@@ -38,14 +38,14 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        pointer-events: none; /* Make sure the span doesn't intercept events */
+        pointer-events: none;
     }
 
     .tile.bg-red-500 { background-color: var(--red-color); }
     .tile.bg-blue-500 { background-color: var(--blue-color); }
     .tile.bg-green-500 { background-color: var(--green-color); }
 
-    .tank { width: 20px; height: calc(var(--tile-size) * 5 + 0.5rem * 4); /* Aligned with grid height */ background: linear-gradient(to top, #111, #333); border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 0 8px rgba(255,255,255,0.1), 0 0 8px rgba(0,0,0,0.5); transition: background-color .4s ease, border-color .4s ease; border: 2px solid transparent; }
+    .tank { width: 20px; height: calc(var(--tile-size) * 5 + 0.5rem * 4); background: linear-gradient(to top, #111, #333); border-radius: 12px; overflow: hidden; position: relative; box-shadow: inset 0 0 8px rgba(255,255,255,0.1), 0 0 8px rgba(0,0,0,0.5); transition: background-color .4s ease, border-color .4s ease; border: 2px solid transparent; }
     .tank-fill { position: absolute; bottom: 0; width: 100%; border-radius: 12px; transition: height 0.4s ease, filter 0.25s ease, background .4s ease; will-change: height, filter; }
     .tank-fill.red { background: linear-gradient(to top, var(--red-color), var(--red-color)); }
     .tank-fill.blue { background: linear-gradient(to top, var(--blue-color), var(--blue-color)); }
@@ -53,53 +53,21 @@
     
     #word-display, #message { height: 2.5rem; display: flex; align-items: center; justify-content: center; }
 
-    /* Responsive Fonts */
     header h1 { font-size: clamp(1.8rem, 5vw, 2.25rem); }
     #score { font-size: clamp(1rem, 3vw, 1.25rem); }
     #word-display { font-size: clamp(1.2rem, 4vw, 1.75rem); }
 
-
-    /* Custom Startup Screen Styles */
-    #startup-screen h2 {
-        color: #e5e7eb; /* A clean, light grey for headings */
-    }
-    .mode-btn {
-        background-color: transparent;
-        border: 1px solid #585072;
-        color: #a7a0c4;
-    }
-    .mode-btn.selected {
-        background-color: #6d28d9;
-        border-color: #6d28d9;
-        color: #ffffff;
-    }
-    #theme-select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
-        background-position: right 0.5rem center;
-        background-repeat: no-repeat;
-        background-size: 1.5em 1.5em;
-        padding-right: 2.5rem;
-        background-color: #1f2937;
-        border: 1px solid #4b5563;
-        color: white;
-    }
+    #startup-screen h2 { color: #e5e7eb; }
+    .mode-btn { background-color: transparent; border: 1px solid #585072; color: #a7a0c4; }
+    .mode-btn.selected { background-color: #6d28d9; border-color: #6d28d9; color: #ffffff; }
+    #theme-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E"); background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; background-color: #1f2937; border: 1px solid #4b5563; color: white; }
     
-    /* Theme Specific Styles */
-    .neon-disco-theme .tile {
-        background-color: transparent;
-        text-shadow: 0 0 5px currentColor, 0 0 10px currentColor;
-    }
+    .neon-disco-theme .tile { background-color: transparent; text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; }
     .neon-disco-theme .tile.bg-red-500 { border-color: var(--red-color); box-shadow: 0 0 8px var(--red-color), inset 0 0 5px var(--red-color); }
     .neon-disco-theme .tile.bg-blue-500 { border-color: var(--blue-color); box-shadow: 0 0 8px var(--blue-color), inset 0 0 5px var(--blue-color); }
     .neon-disco-theme .tile.bg-green-500 { border-color: var(--green-color); box-shadow: 0 0 8px var(--green-color), inset 0 0 5px var(--green-color); }
     
-    .mrc-theme .tile {
-        border-width: 1px;
-        box-shadow: none;
-    }
+    .mrc-theme .tile { border-width: 1px; box-shadow: none; }
     .mrc-theme .tile.bg-red-500 { border-color: var(--red-color); background-color: rgba(147, 51, 234, 0.15); }
     .mrc-theme .tile.bg-blue-500 { border-color: var(--blue-color); background-color: rgba(59, 130, 246, 0.15); }
     .mrc-theme .tile.bg-green-500 { border-color: var(--green-color); background-color: rgba(236, 72, 153, 0.15); }
@@ -133,32 +101,31 @@
 
 
   <div id="game-container" class="hidden w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-4">
-    
+    <header class="text-center">
+      <h1 class="font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-lg">Draino</h1>
+      <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
+      <p id="score" class="mt-2 font-bold">Score: 0</p>
+    </header>
     <div class="w-full flex justify-center items-end gap-10">
-        <!-- Column 1: Tanks & Speed -->
-        <div class="flex flex-col items-center">
-            <div id="speed-indicator-container" class="h-8 mb-2 text-center text-base font-bold tracking-widest hidden w-28 relative">
+        <!-- Left Column (Tanks) -->
+        <div class="flex flex-col items-center w-28 flex-shrink-0">
+            <div id="speed-indicator-container" class="h-8 mb-2 text-center text-base font-bold tracking-widest hidden relative">
                 <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
                 <span id="speed-mph-display" class="text-yellow-400"></span>
             </div>
-            <div id="banks" class="flex flex-row items-end justify-center gap-2 w-28 flex-shrink-0">
+            <div id="banks" class="flex flex-row items-end justify-center gap-2">
               <div class="tank"><div id="red-bank" class="tank-fill red" style="height:100%"></div></div>
               <div class="tank"><div id="blue-bank" class="tank-fill blue" style="height:100%"></div></div>
               <div class="tank"><div id="green-bank" class="tank-fill green" style="height:100%"></div></div>
             </div>
         </div>
 
-        <!-- Column 2: Main Game Area -->
-        <div class="flex flex-col items-center gap-4">
-            <header class="text-center">
-              <h1 class="font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-lg">Draino</h1>
-              <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
-              <p id="score" class="mt-2 font-bold">Score: 0</p>
-            </header>
-            <div class="grid grid-cols-5 gap-2 justify-center" id="grid-container"></div>
-        </div>
+        <!-- Center Column (Grid) -->
+        <div class="grid grid-cols-5 gap-2 justify-center" id="grid-container"></div>
+        
+        <!-- Right Column (Spacer) -->
+        <div class="w-28 flex-shrink-0"></div>
     </div>
-    
     <div class="flex flex-col items-center">
         <p id="word-display" class="mt-2 font-bold tracking-widest text-gray-200"></p>
         <p id="message" class="text-base font-semibold"></p>
@@ -724,4 +691,5 @@
   </script>
 </body>
 </html>
+
 
