@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
   <title>Draino — Word & Colours</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -346,6 +346,13 @@
       const vowelCount = 9 + Math.floor(Math.random() * 2); // Guarantees 9 or 10 vowels
       const consonantCount = totalTiles - vowelCount;
       const letters = [];
+      for(let i=0;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+    function generateLetters(){
+      const totalTiles = GRID_SIZE * GRID_SIZE;
+      const vowelCount = 9 + Math.floor(Math.random() * 2); // Guarantees 9 or 10 vowels
+      const consonantCount = totalTiles - vowelCount;
+      const letters = [];
       for(let i=0;i<vowelCount;i++) letters.push(VOWELS[Math.floor(Math.random()*VOWELS.length)]);
       for(let i=0;i<consonantCount;i++) letters.push(CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)]);
       return shuffle(letters);
@@ -633,7 +640,7 @@
 
         for (const color of COLORS) {
             while (counts[color.name] < minCount) {
-                const donorColor = COLORS.find(c => counts[c.name] > minCount);
+                const donorColor = COLORS.find(c => c.name > minCount);
                 if (!donorColor) break;
 
                 const donorIndex = grid.findIndex(t => t.colorName === donorColor.name);
