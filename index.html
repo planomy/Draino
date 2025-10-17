@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Draino — Word & Colours</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
@@ -54,9 +54,9 @@
     #word-display, #message { height: 2.5rem; display: flex; align-items: center; justify-content: center; }
 
     /* Responsive Fonts */
-    #game-container header h1 { font-size: clamp(1.8rem, 5vw, 2.25rem); }
-    #game-container #score { font-size: clamp(1rem, 3vw, 1.25rem); }
-    #game-container #word-display { font-size: clamp(1.2rem, 4vw, 1.75rem); }
+    header h1 { font-size: clamp(1.8rem, 5vw, 2.25rem); }
+    #score { font-size: clamp(1rem, 3vw, 1.25rem); }
+    #word-display { font-size: clamp(1.2rem, 4vw, 1.75rem); }
 
 
     /* Custom Startup Screen Styles */
@@ -132,14 +132,10 @@
   </div>
 
 
-  <div id="game-container" class="hidden w-full max-w-5xl mx-auto flex flex-col items-center gap-4">
-    <header class="text-center">
-      <h1 class="text-4xl font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-lg">Draino</h1>
-      <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
-      <p id="score" class="text-lg mt-2 font-bold">Score: 0</p>
-    </header>
+  <div id="game-container" class="hidden w-full max-w-5xl mx-auto flex flex-col items-center justify-center gap-4">
     
     <div class="w-full flex justify-center items-end gap-10">
+        <!-- Column 1: Tanks & Speed -->
         <div class="flex flex-col items-center">
             <div id="speed-indicator-container" class="h-8 mb-2 text-center text-base font-bold tracking-widest hidden w-28 relative">
                 <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
@@ -152,11 +148,19 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-5 gap-2 justify-center" id="grid-container"></div>
+        <!-- Column 2: Main Game Area -->
+        <div class="flex flex-col items-center gap-4">
+            <header class="text-center">
+              <h1 class="font-bold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500 drop-shadow-lg">Draino</h1>
+              <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
+              <p id="score" class="mt-2 font-bold">Score: 0</p>
+            </header>
+            <div class="grid grid-cols-5 gap-2 justify-center" id="grid-container"></div>
+        </div>
     </div>
     
     <div class="flex flex-col items-center">
-        <p id="word-display" class="text-2xl mt-2 font-bold tracking-widest text-gray-200"></p>
+        <p id="word-display" class="mt-2 font-bold tracking-widest text-gray-200"></p>
         <p id="message" class="text-base font-semibold"></p>
     </div>
   </div>
@@ -640,7 +644,9 @@
         for (const color of COLORS) {
             while (counts[color.name] < minCount) {
                 const donorColor = COLORS.find(c => counts[c.name] > minCount);
-                if (!donorColor) break;
+                if (!donorColor) {
+                    break;
+                };
 
                 const donorIndex = grid.findIndex(t => t.colorName === donorColor.name);
                 if (donorIndex === -1) break;
@@ -718,5 +724,4 @@
   </script>
 </body>
 </html>
-
 
