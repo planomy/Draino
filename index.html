@@ -134,13 +134,20 @@
       <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
       <p id="score" class="mt-2 font-bold">Score: 0</p>
     </header>
-    <div class="w-full flex flex-col md:flex-row justify-center items-center md:items-end gap-4 md:gap-10 mt-4">
+
+    <!-- NEW: Status Display Area -->
+    <div id="status-display" class="relative w-full my-2 md:my-4" style="height: 2.5rem;">
+        <div id="speed-indicator-container" class="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 transition-opacity duration-300">
+            <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
+            <span id="speed-mph-display" class="text-yellow-400 text-base font-bold tracking-widest"></span>
+        </div>
+        <p id="word-display" class="absolute inset-0 flex items-center justify-center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
+        <p id="message" class="absolute inset-0 flex items-center justify-center text-base font-semibold opacity-0 transition-opacity duration-200"></p>
+    </div>
+
+    <div class="w-full flex flex-col md:flex-row justify-center items-center md:items-end gap-4 md:gap-10">
         <!-- Left Column (Tanks) -->
-        <div class="flex flex-col items-center w-full md:w-28 flex-shrink-0">
-            <div id="speed-indicator-container" class="h-8 mb-2 text-center text-base font-bold tracking-widest hidden relative">
-                <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
-                <span id="speed-mph-display" class="text-yellow-400"></span>
-            </div>
+        <div id="tanks-container" class="flex flex-col items-center w-full md:w-28 flex-shrink-0 order-2 md:order-1">
             <div id="banks" class="flex flex-row items-end justify-center gap-2">
               <div class="tank"><div id="red-bank" class="tank-fill red" style="height:100%"></div></div>
               <div class="tank"><div id="blue-bank" class="tank-fill blue" style="height:100%"></div></div>
@@ -149,14 +156,10 @@
         </div>
 
         <!-- Center Column (Grid) -->
-        <div class="grid grid-cols-5 gap-2 justify-center" id="grid-container"></div>
+        <div class="grid grid-cols-5 gap-2 justify-center order-1 md:order-2" id="grid-container"></div>
         
         <!-- Right Column (Spacer) -->
-        <div class="w-28 flex-shrink-0 hidden md:block"></div>
-    </div>
-    <div class="relative w-full mt-2" style="height: 2.5rem;">
-        <p id="word-display" class="absolute inset-0 flex items-center justify-center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
-        <p id="message" class="absolute inset-0 flex items-center justify-center text-base font-semibold opacity-0 transition-opacity duration-200"></p>
+        <div class="w-28 flex-shrink-0 hidden md:block order-3"></div>
     </div>
   </div>
 
@@ -219,7 +222,7 @@
         },
         'autumn': { name: 'Autumn', colors: { red: '#d97706', blue: '#b91c1c', green: '#84cc16', bg: '#422006', text: '#fef3c7' } },
         'francais': {
-            name: 'La Francais',
+            name: 'Le Tricolore',
             colors: { red: '#dc2626', blue: '#2563eb', green: '#e5e7eb', bg: '#102a43', text: '#f3f4f6' },
             textColorOverride: { green: '#102a43' }
         },
@@ -332,11 +335,14 @@
         currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
         gameOverModal.classList.add('hidden');
         
+        wordDisplay.classList.remove('opacity-0');
+        messageEl.classList.add('opacity-0');
+        speedIndicatorContainer.classList.add('opacity-0');
+
         if (gameMode === 'competition') {
-            speedIndicatorContainer.classList.remove('hidden');
             updateSpeedDisplay();
-        } else {
-            speedIndicatorContainer.classList.add('hidden');
+            speedIndicatorContainer.classList.remove('opacity-0');
+            setTimeout(() => speedIndicatorContainer.classList.add('opacity-0'), 1500);
         }
 
         generateGrid();
@@ -413,10 +419,15 @@
             if (newInterval < currentDrainIntervalMs) {
                 currentDrainIntervalMs = newInterval;
                 
+                wordDisplay.classList.add('opacity-0');
+                messageEl.classList.add('opacity-0');
+                speedIndicatorContainer.classList.remove('opacity-0');
                 speedUpText.classList.remove('opacity-0');
                 
                 setTimeout(() => {
                     speedUpText.classList.add('opacity-0');
+                    speedIndicatorContainer.classList.add('opacity-0');
+                    wordDisplay.classList.remove('opacity-0');
                     updateSpeedDisplay();
                 }, 1500);
 
@@ -732,7 +743,7 @@
         startupScreen.classList.remove('hidden');
         gameContainer.classList.add('hidden');
         
-        speedIndicatorContainer.classList.add('hidden');
+        // No need to manage speed indicator here, startGame handles it.
 
         const root = document.documentElement;
         root.style.setProperty('--bg-color', '#111827');
@@ -750,8 +761,4 @@
   </script>
 </body>
 </html>
-
-
-
-
 
