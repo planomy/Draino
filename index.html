@@ -8,34 +8,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --tile-size: clamp(2.5rem, 15vmin, 5rem);
-      --red-color: #ef4444;
-      --blue-color: #3b82f6;
-      --green-color: #22c55e;
-      --bg-color: #111827;
-      --text-color: #f9fafb;
-      --modal-bg-color: #1f2937;
+        --tile-size: clamp(2.5rem, 15vmin, 5rem);
+        --red-color: #ef4444;
+        --blue-color: #3b82f6;
+        --green-color: #22c55e;
+        --bg-color: #111827;
+        --text-color: #f9fafb;
+        --modal-bg-color: #1f2937;
     }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: background-color .4s ease, color .4s ease;
+    body { 
+      font-family: 'Inter', sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+      background-color: var(--bg-color); 
+      color: var(--text-color); 
+      transition: background-color .4s ease, color .4s ease; 
       -webkit-user-select: none;
       -moz-user-select: none;
       -ms-user-select: none;
       user-select: none;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-      margin: 0;
     }
-
     .tile {
       transition: transform .12s ease, filter .12s ease, box-shadow .18s ease, background-color .4s ease, border-color .4s ease;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / .2), 0 2px 4px -2px rgb(0 0 0 / .2);
@@ -47,17 +39,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative; /* Added for potential future visual cues */
     }
     .tile.selected { transform: scale(1.08); filter: brightness(1.18); }
 
     .tile > span {
-      width: 70%;
-      height: 70%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      pointer-events: none;
+        width: 70%;
+        height: 70%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* pointer-events: none; --- This is the key change for touch precision */
     }
 
     .tile.bg-red-500 { background-color: var(--red-color); }
@@ -131,878 +122,862 @@
       .tank-fill.red { background: var(--red-color); }
       .tank-fill.blue { background: var(--blue-color); }
       .tank-fill.green { background: var(--green-color); }
-      #startup-screen {
-        width: 90%;
-        max-width: none;
-        margin: 0 auto;
-        padding: 8px;
-      }
     }
   </style>
 </head>
-<body>
+<body class="p-4">
 
-<div id="startup-screen" class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 flex flex-col items-center">
-  <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-4">Draino</h1>
-  <p class="text-lg mb-6">Select a mode and theme to begin.</p>
-  
-  <div class="mb-4">
-    <h2 class="text-xl font-medium mb-4">Game Mode</h2>
-    <div class="flex justify-center items-center gap-2 md:gap-4">
-      <div class="flex flex-col items-center w-28">
-        <button data-mode="zen" class="mode-btn w-full py-1.5 rounded-lg text-base font-medium transition-all">Peace Out</button>
-        <p class="text-xs text-gray-400 mt-2 text-center h-10">Take your time and chill.</p>
+<div id="startup-screen" class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700">
+      <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-4">Draino</h1>
+      <p class="text-lg mb-6">Select a mode and theme to begin.</p>
+      
+      <div class="mb-4">
+          <h2 class="text-xl font-medium mb-4">Game Mode</h2>
+          <div class="flex justify-center items-center gap-2 md:gap-4">
+              <div class="flex flex-col items-center w-28">
+                <button data-mode="zen" class="mode-btn w-full py-1.5 rounded-lg text-base font-medium transition-all">Peace Out</button>
+                <p class="text-xs text-gray-400 mt-2 text-center h-10">Take your time and chill.</p>
+              </div>
+              <div class="flex flex-col items-center w-40">
+                <button data-mode="daily" class="mode-btn w-full py-2.5 rounded-lg text-lg font-bold transition-all uppercase">Daily Challenge</button>
+                <p id="daily-challenge-desc" class="text-xs text-gray-400 mt-2 text-center h-10"></p>
+              </div>
+              <div class="flex flex-col items-center w-28">
+                <button data-mode="frantic" class="mode-btn w-full py-1.5 rounded-lg text-base font-medium transition-all">Frantic</button>
+                <p class="text-xs text-gray-400 mt-2 text-center h-10">Accelerate every 100 points.</p>
+              </div>
+          </div>
       </div>
-      <div class="flex flex-col items-center w-40">
-        <button data-mode="daily" class="mode-btn w-full py-2.5 rounded-lg text-lg font-bold transition-all uppercase">Daily Challenge</button>
-        <p id="daily-challenge-desc" class="text-xs text-gray-400 mt-2 text-center h-10"></p>
+
+      <div id="theme-selector-container" class="mb-4 transition-opacity duration-300">
+          <select id="theme-select" class="w-full max-w-xs mx-auto p-2 rounded-lg text-base">
+              <option value="" disabled selected>Select a theme...</option>
+          </select>
       </div>
-      <div class="flex flex-col items-center w-28">
-        <button data-mode="frantic" class="mode-btn w-full py-1.5 rounded-lg text-base font-medium transition-all">Frantic</button>
-        <p class="text-xs text-gray-400 mt-2 text-center h-10">Accelerate every 100 points.</p>
-      </div>
-    </div>
+
+      <button id="start-game-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:scale-100" disabled>Start Game</button>
   </div>
 
-  <div id="theme-selector-container" class="mb-4 transition-opacity duration-300">
-    <select id="theme-select" class="w-full max-w-xs mx-auto p-2 rounded-lg text-base">
-      <option value="" disabled selected>Select a theme...</option>
-    </select>
-  </div>
 
-  <button id="start-game-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:scale-100">Start Game</button>
-</div>
+  <div id="game-container" class="hidden w-full max-w-5xl mx-auto">
+    <header class="text-center">
+      <h1 class="font-bold tracking-wider text-cyan-400 drop-shadow-lg">Draino</h1>
+      <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
+      <p id="score" class="mt-2 font-bold">Score: 0</p>
+    </header>
 
-<div id="game-container" class="hidden w-full max-w-5xl mx-auto">
-  <header class="text-center">
-    <h1 class="font-bold tracking-wider text-cyan-400 drop-shadow-lg">Draino</h1>
-    <p id="subtitle" class="text-base mt-1">Find words to restore the coloured banks!</p>
-    <p id="score" class="mt-2 font-bold">Score: 0</p>
-  </header>
-
-  <div id="status-display" class="relative w-full my-2 md:my-4" style="height: 2.5rem;">
-    <div id="speed-indicator-container" class="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 transition-opacity duration-300">
-      <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
-      <span id="speed-mph-display" class="text-base font-bold tracking-widest text-yellow-400"></span>
-    </div>
-    <p id="word-display" class="absolute inset-0 flex items-center justify-content: center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
-    <p id="message" class="absolute inset-0 flex items-center justify-center text-base font-semibold opacity-0 transition-opacity duration-200"></p>
-  </div>
-
-  <div class="w-full flex flex-col md:flex-row justify-center items-center md:items-end gap-4 md:gap-10">
-    <div id="tanks-container" class="flex flex-col items-center w-full md:w-28 flex-shrink-0 order-2 md:order-1">
-      <div id="banks" class="flex flex-row items-end justify-center gap-2">
-        <div class="tank"><div id="red-bank" class="tank-fill red"></div></div>
-        <div class="tank"><div id="blue-bank" class="tank-fill blue"></div></div>
-        <div class="tank"><div id="green-bank" class="tank-fill green"></div></div>
-      </div>
+    <!-- NEW: Status Display Area -->
+    <div id="status-display" class="relative w-full my-2 md:my-4" style="height: 2.5rem;">
+        <div id="speed-indicator-container" class="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 transition-opacity duration-300">
+            <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
+            <span id="speed-mph-display" class="text-base font-bold tracking-widest text-yellow-400"></span>
+        </div>
+        <p id="word-display" class="absolute inset-0 flex items-center justify-center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
+        <p id="message" class="absolute inset-0 flex items-center justify-center text-base font-semibold opacity-0 transition-opacity duration-200"></p>
     </div>
 
-    <div class="grid grid-cols-5 gap-2 justify-center order-1 md:order-2" id="grid-container"></div>
-    
-    <div class="w-28 flex-shrink-0 hidden md:block order-3"></div>
+    <div class="w-full flex flex-col md:flex-row justify-center items-center md:items-end gap-4 md:gap-10">
+        <!-- Left Column (Tanks) -->
+        <div id="tanks-container" class="flex flex-col items-center w-full md:w-28 flex-shrink-0 order-2 md:order-1">
+            <div id="banks" class="flex flex-row items-end justify-center gap-2">
+              <div class="tank"><div id="red-bank" class="tank-fill red"></div></div>
+              <div class="tank"><div id="blue-bank" class="tank-fill blue"></div></div>
+              <div class="tank"><div id="green-bank" class="tank-fill green"></div></div>
+            </div>
+        </div>
+
+        <!-- Center Column (Grid) -->
+        <div class="grid grid-cols-5 gap-2 justify-center order-1 md:order-2" id="grid-container"></div>
+        
+        <!-- Right Column (Spacer) -->
+        <div class="w-28 flex-shrink-0 hidden md:block order-3"></div>
+    </div>
   </div>
-</div>
 
 <div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
-  <div class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700">
-    <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-4">Game Over</h1>
-    
-    <div class="text-left w-full max-w-sm mx-auto my-6 space-y-2 text-lg text-gray-300">
-      <div class="flex justify-between"><span>Base Score:</span><span id="base-score-display">0</span></div>
-      <div class="flex justify-between"><span>Long Word Bonus (<span id="long-words-count">0</span> x 20):</span><span id="long-word-bonus-display">+0</span></div>
-      <div class="flex justify-between"><span>Best Streak Bonus (<span id="best-streak-count">0</span> x 5):</span><span id="streak-bonus-display">+0</span></div>
-    </div>
-    
-    <hr class="border-gray-600 w-full max-w-sm mx-auto">
-    
-    <div class="mt-4">
-      <p class="text-lg text-gray-400">Final Score</p>
-      <p id="final-score" class="text-5xl text-yellow-400 font-bold">0</p>
-    </div>
-    
-    <div class="text-center w-full max-w-sm mx-auto my-6 space-y-1 text-base text-gray-400 border-t border-gray-700 pt-4 mt-6">
-      <p>Total Words Found: <span id="total-words-display" class="font-semibold text-gray-200">0</span></p>
-      <p>Longest Word: <span id="longest-word-display" class="font-semibold text-gray-200">-</span></p>
-    </div>
+    <div class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700">
+      <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-4">Game Over</h1>
+      
+      <div class="text-left w-full max-w-sm mx-auto my-6 space-y-2 text-lg text-gray-300">
+          <div class="flex justify-between"><span>Base Score:</span><span id="base-score-display">0</span></div>
+          <div class="flex justify-between"><span>Long Word Bonus (<span id="long-words-count">0</span> x 20):</span><span id="long-word-bonus-display">+0</span></div>
+          <div class="flex justify-between"><span>Best Streak Bonus (<span id="best-streak-count">0</span> x 5):</span><span id="streak-bonus-display">+0</span></div>
+      </div>
+      
+      <hr class="border-gray-600 w-full max-w-sm mx-auto">
+      
+      <div class="mt-4">
+        <p class="text-lg text-gray-400">Final Score</p>
+        <p id="final-score" class="text-5xl text-yellow-400 font-bold">0</p>
+      </div>
+      
+      <div class="text-center w-full max-w-sm mx-auto my-6 space-y-1 text-base text-gray-400 border-t border-gray-700 pt-4 mt-6">
+          <p>Total Words Found: <span id="total-words-display" class="font-semibold text-gray-200">0</span></p>
+          <p>Longest Word: <span id="longest-word-display" class="font-semibold text-gray-200">-</span></p>
+      </div>
 
-    <button id="restart-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105">Play Again</button>
-    <button id="share-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl mt-4 transition-transform transform hover:scale-105">Share</button>
+      <div class="flex justify-center items-center gap-4">
+        <button id="restart-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 md:px-10 rounded-lg text-lg md:text-xl transition-transform transform hover:scale-105">Play Again</button>
+        <button id="share-button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 md:px-10 rounded-lg text-lg md:text-xl transition-transform transform hover:scale-105">Share</button>
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-  // --- Game Configuration ---
-  const GRID_SIZE = 5;
-  const MIN_WORD_LENGTH = 3;
-  const LONG_WORD_THRESHOLD = 4;
-  const BONUS_WORD_LENGTH = 5; 
-  const LONG_WORD_BONUS_POINTS = 20; 
-  const STREAK_BONUS_POINTS = 5;
-  const LONG_WORD_BONUS_MULTIPLIER = 1.5;
-  const VOWELS = 'aaaaaaaeeeeeeeeeeeeiiiiiiiiooooooouuuu';
-  const CONSONANTS = 'bbcccdddffgghhhkklllmmmnnnnnppprrrrrrssssstttttvvwwwyy';
-  const COLORS = [
-    { name: 'red', class: 'bg-red-500' }, { name: 'blue', class: 'bg-blue-500' }, { name: 'green', class: 'bg-green-500' }
-  ];
-  const INITIAL_BANK_LEVEL = 10;
-  const MAX_BANK_LEVEL = 10;
-  const BASE_DRAIN_RATE = 0.1;
-  const DAILY_DRAIN_RATE_MULTIPLIER = 2;
-  const DAILY_SCORE_THRESHOLD = 75;
-  const DAILY_SPEED_INCREASE = 0.5;
-  const BASE_DRAIN_INTERVAL_MS = 1000;
-  const COMPETITION_SCORE_THRESHOLD = 100;
-  const COMPETITION_SPEED_INCREASE = 150; // ms
-  const MIN_DRAIN_INTERVAL = 250; //ms
-  const MPH_LEVELS = [90, 110, 150, 200, 260, 330, 400, 500];
+  <script>
+    // --- Game Configuration ---
+    const GRID_SIZE = 5;
+    const MIN_WORD_LENGTH = 3;
+    const LONG_WORD_THRESHOLD = 4;
+    const BONUS_WORD_LENGTH = 5; 
+    const LONG_WORD_BONUS_POINTS = 20; 
+    const STREAK_BONUS_POINTS = 5;
+    const LONG_WORD_BONUS_MULTIPLIER = 1.5;
+    const VOWELS = 'aaaaaaaeeeeeeeeeeeeiiiiiiiiooooooouuuu';
+    const CONSONANTS = 'bbcccdddffgghhhkklllmmmnnnnnppprrrrrrssssstttttvvwwwyy';
+    const COLORS = [
+      { name: 'red', class: 'bg-red-500' }, { name: 'blue', class: 'bg-blue-500' }, { name: 'green', class: 'bg-green-500' }
+    ];
+    const INITIAL_BANK_LEVEL = 10;
+    const MAX_BANK_LEVEL = 10;
+    const BASE_DRAIN_RATE = 0.1;
+    const DAILY_DRAIN_RATE_MULTIPLIER = 2;
+    const DAILY_SCORE_THRESHOLD = 75;
+    const DAILY_SPEED_INCREASE = 0.5;
+    const BASE_DRAIN_INTERVAL_MS = 1000;
+    const COMPETITION_SCORE_THRESHOLD = 100;
+    const COMPETITION_SPEED_INCREASE = 150; // ms
+    const MIN_DRAIN_INTERVAL = 250; //ms
+    const MPH_LEVELS = [90, 110, 150, 200, 260, 330, 400, 500];
 
-  // --- Game State ---
-  let wordSet = new Set();
-  const bannedWords = new Set(['arse', 'ass', 'asshole', 'bastard', 'bitch', 'bollocks', 'bugger', 'bullshit', 'choad', 'chode', 'cock', 'crap', 'cunt', 'damn', 'dick', 'fag', 'faggot', 'fuck', 'hell', 'jizz', 'knob', 'motherfucker', 'piss', 'prick', 'pussy', 'shit', 'slut', 'twat', 'wank', 'wanker', 'whore']);
-  let grid = [];
-  let currentSelection = [];
-  let isSelecting = false;
-  let colourBanks = {};
-  let drainInterval;
-  let currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
-  let score = 0;
-  let isGameOver = false;
-  let gameMode = ''; // 'zen', 'daily', 'frantic'
-  let selectedTheme = '';
-  let activeTouchId = null;
-  let messageTimeout;
-  let lastMessageColor = '';
-  let priorityColor = null;
-  let dailyDrainMultiplier = 1;
+    // --- Game State ---
+    let wordSet = new Set();
+    const bannedWords = new Set(['arse', 'ass', 'asshole', 'bastard', 'bitch', 'bollocks', 'bugger', 'bullshit', 'choad', 'chode', 'cock', 'crap', 'cunt', 'damn', 'dick', 'fag', 'faggot', 'fuck', 'hell', 'jizz', 'knob', 'motherfucker', 'piss', 'prick', 'pussy', 'shit', 'slut', 'twat', 'wank', 'wanker', 'whore']);
+    let grid = [];
+    let currentSelection = [];
+    let isSelecting = false;
+    let colourBanks = {};
+    let drainInterval;
+    let currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
+    let score = 0;
+    let isGameOver = false;
+    let gameMode = ''; // 'zen', 'daily', 'frantic'
+    let selectedTheme = '';
+    let activeTouchId = null;
+    let messageTimeout;
+    let lastMessageColor = '';
+    let priorityColor = null;
+    let dailyDrainMultiplier = 1;
 
-  // --- Stats Tracking ---
-  let totalWordsFound = 0;
-  let longWordsFound = 0;
-  let longestWord = '';
-  let currentStreak = 0;
-  let bestStreak = 0;
+    // --- Stats Tracking ---
+    let totalWordsFound = 0;
+    let longWordsFound = 0;
+    let longestWord = '';
+    let currentStreak = 0;
+    let bestStreak = 0;
 
-  // --- Themes ---
-  const THEMES = {
-    'mrc': {
-      name: 'Mr C\'s Choice',
-      special: true,
-      colors: { red: '#9333ea', blue: '#3b82f6', green: '#ec4899', bg: '#101727', text: '#e5e7eb' }
-    },
-    'regular': {
-      name: 'Regular',
-      colors: { red: '#ef4444', blue: '#3b82f6', green: '#22c55e', bg: '#101727', text: '#f9fafb' }
-    },
-    'autumn': { name: 'Autumn', colors: { red: '#d97706', blue: '#b91c1c', green: '#84cc16', bg: '#422006', text: '#fef3c7' } },
-    'francais': {
-      name: 'Le Tricolore',
-      colors: { red: '#dc2626', blue: '#2563eb', green: '#e5e7eb', bg: '#102a43', text: '#f3f4f6' },
-      textColorOverride: { green: '#102a43' }
-    },
-    'neon-disco': {
-      name: 'Neon Disco',
-      special: true,
-      colors: { red: '#f43f5e', blue: '#38bdf8', green: '#34d399', bg: '#1a1a2e', text: '#f0f0f0' }
-    },
-    'cosmic': {
-      name: 'Melon Bliss',
-      colors: { red: '#f472b6', blue: '#a78bfa', green: '#5eead4', bg: '#020617', text: '#e2e8f0' },
-      textColorOverride: { green: '#020617' }
-    },
-    'candyland': {
-      name: 'Candyland',
-      colors: { red: '#f472b6', blue: '#60a5fa', green: '#fde047', bg: '#5b21b6', text: '#fee2e2' },
-      textColorOverride: { green: '#831843' }
-    },
-    'jungle': { name: 'Tropical Jungle', colors: { red: '#f43f5e', blue: '#0ea5e9', green: '#16a34a', bg: '#052e22', text: '#a7f3d0' } },
-    'monochrome': {
-      name: 'Monochrome',
-      colors: { red: '#f9fafb', blue: '#4b5563', green: '#9ca3af', bg: '#111827', text: '#f9fafb'},
-      textColorOverride: { red: '#111827', green: '#111827' }
+    // --- Themes ---
+    const THEMES = {
+        'mrc': {
+            name: 'Mr C\'s Choice',
+            special: true,
+            colors: { red: '#9333ea', blue: '#3b82f6', green: '#ec4899', bg: '#101727', text: '#e5e7eb' }
+        },
+        'regular': {
+            name: 'Regular',
+            colors: { red: '#ef4444', blue: '#3b82f6', green: '#22c55e', bg: '#101727', text: '#f9fafb' }
+        },
+        'autumn': { name: 'Autumn', colors: { red: '#d97706', blue: '#b91c1c', green: '#84cc16', bg: '#422006', text: '#fef3c7' } },
+        'francais': {
+            name: 'Le Tricolore',
+            colors: { red: '#dc2626', blue: '#2563eb', green: '#e5e7eb', bg: '#102a43', text: '#f3f4f6' },
+            textColorOverride: { green: '#102a43' }
+        },
+        'neon-disco': {
+            name: 'Neon Disco',
+            special: true,
+            colors: { red: '#f43f5e', blue: '#38bdf8', green: '#34d399', bg: '#1a1a2e', text: '#f0f0f0' }
+        },
+        'cosmic': {
+            name: 'Melon Bliss',
+            colors: { red: '#f472b6', blue: '#a78bfa', green: '#5eead4', bg: '#020617', text: '#e2e8f0' },
+            textColorOverride: { green: '#020617' }
+        },
+        'candyland': {
+            name: 'Candyland',
+            colors: { red: '#f472b6', blue: '#60a5fa', green: '#fde047', bg: '#5b21b6', text: '#fee2e2' },
+            textColorOverride: { green: '#831843' }
+        },
+        'jungle': { name: 'Tropical Jungle', colors: { red: '#f43f5e', blue: '#0ea5e9', green: '#16a34a', bg: '#052e22', text: '#a7f3d0' } },
+        'monochrome': {
+            name: 'Monochrome',
+            colors: { red: '#f9fafb', blue: '#4b5563', green: '#9ca3af', bg: '#111827', text: '#f9fafb'},
+            textColorOverride: { red: '#111827', green: '#111827' }
+        }
+    };
+
+    // --- DOM Elements ---
+    const startupScreen = document.getElementById('startup-screen');
+    const gameContainer = document.getElementById('game-container');
+    const gridContainer = document.getElementById('grid-container');
+    const wordDisplay = document.getElementById('word-display');
+    const messageEl = document.getElementById('message');
+    const scoreEl = document.getElementById('score');
+    const gameOverModal = document.getElementById('game-over-modal');
+    const finalScoreEl = document.getElementById('final-score');
+    const restartButton = document.getElementById('restart-button');
+    const shareButton = document.getElementById('share-button');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const themeSelect = document.getElementById('theme-select');
+    const themeSelectorContainer = document.getElementById('theme-selector-container');
+    const modeButtons = document.querySelectorAll('.mode-btn');
+    const speedIndicatorContainer = document.getElementById('speed-indicator-container');
+    const speedUpText = document.getElementById('speed-up-text');
+    const speedMphDisplay = document.getElementById('speed-mph-display');
+    const baseScoreDisplay = document.getElementById('base-score-display');
+    const longWordsCount = document.getElementById('long-words-count');
+    const longWordBonusDisplay = document.getElementById('long-word-bonus-display');
+    const bestStreakCount = document.getElementById('best-streak-count');
+    const streakBonusDisplay = document.getElementById('streak-bonus-display');
+    const totalWordsDisplay = document.getElementById('total-words-display');
+    const longestWordDisplay = document.getElementById('longest-word-display');
+    const subtitle = document.getElementById('subtitle');
+    const dailyChallengeDesc = document.getElementById('daily-challenge-desc');
+
+    // --- Initialization ---
+    function initializeApp() {
+        setupStartupScreen();
+        fetch('https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt')
+            .then(r => r.ok ? r.text() : Promise.reject('Failed to load word list'))
+            .then(data => {
+                data.split('\n').forEach(w => w && wordSet.add(w.trim().toLowerCase()));
+            }).catch(error => {
+                console.error("Error fetching word list:", error);
+                startupScreen.innerHTML = `<p class="text-red-500">Could not load game dictionary. Please refresh the page.</p>`;
+            });
     }
-  };
 
-  // --- DOM Elements ---
-  const startupScreen = document.getElementById('startup-screen');
-  const gameContainer = document.getElementById('game-container');
-  const gridContainer = document.getElementById('grid-container');
-  const wordDisplay = document.getElementById('word-display');
-  const messageEl = document.getElementById('message');
-  const scoreEl = document.getElementById('score');
-  const gameOverModal = document.getElementById('game-over-modal');
-  const finalScoreEl = document.getElementById('final-score');
-  const restartButton = document.getElementById('restart-button');
-  const startGameBtn = document.getElementById('start-game-btn');
-  const themeSelect = document.getElementById('theme-select');
-  const themeSelectorContainer = document.getElementById('theme-selector-container');
-  const modeButtons = document.querySelectorAll('.mode-btn');
-  const speedIndicatorContainer = document.getElementById('speed-indicator-container');
-  const speedUpText = document.getElementById('speed-up-text');
-  const speedMphDisplay = document.getElementById('speed-mph-display');
-  const baseScoreDisplay = document.getElementById('base-score-display');
-  const longWordsCount = document.getElementById('long-words-count');
-  const longWordBonusDisplay = document.getElementById('long-word-bonus-display');
-  const bestStreakCount = document.getElementById('best-streak-count');
-  const streakBonusDisplay = document.getElementById('streak-bonus-display');
-  const totalWordsDisplay = document.getElementById('total-words-display');
-  const longestWordDisplay = document.getElementById('longest-word-display');
-  const subtitle = document.getElementById('subtitle');
-  const dailyChallengeDesc = document.getElementById('daily-challenge-desc');
-  const shareButton = document.getElementById('share-button');
+    function setupStartupScreen() {
+        // Set daily challenge description dynamically
+        const dailyColor = getDailyChallengeColor();
+        dailyChallengeDesc.textContent = `Protect the '${dailyColor.toUpperCase()}' tank.`;
 
-  // --- Initialization ---
-  function initializeApp() {
-    setupStartupScreen();
-    fetch('https://raw.githubusercontent.com/dwyl/english-words/master/words_alpha.txt')
-      .then(r => r.ok ? r.text() : Promise.reject('Failed to load word list'))
-      .then(data => {
-        data.split('\n').forEach(w => w && wordSet.add(w.trim().toLowerCase()));
-      }).catch(error => {
-        console.error("Error fetching word list:", error);
-        startupScreen.innerHTML = `<p class="text-red-500">Could not load game dictionary. Please refresh the page.</p>`;
+        Object.entries(THEMES).forEach(([key, theme]) => {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = theme.name;
+            themeSelect.appendChild(option);
+        });
+        modeButtons.forEach(btn => btn.addEventListener('click', () => {
+            gameMode = btn.dataset.mode;
+            modeButtons.forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            if (gameMode === 'daily') {
+                themeSelectorContainer.classList.add('opacity-50', 'pointer-events-none');
+                selectedTheme = 'regular'; // Internally set to regular
+            } else {
+                themeSelectorContainer.classList.remove('opacity-50', 'pointer-events-none');
+                selectedTheme = themeSelect.value;
+            }
+
+            validateSelections();
+        }));
+        themeSelect.addEventListener('change', e => {
+            selectedTheme = e.target.value;
+            validateSelections();
+        });
+        startGameBtn.addEventListener('click', () => {
+            startupScreen.classList.add('hidden');
+            gameContainer.classList.remove('hidden');
+            
+            // Final check to ensure daily challenge always uses the regular theme
+            const themeToApply = gameMode === 'daily' ? 'regular' : selectedTheme;
+            applyTheme(themeToApply);
+            
+            startGame();
+        });
+    }
+    
+    function validateSelections() {
+        if (gameMode === 'daily') {
+            startGameBtn.disabled = false;
+        } else {
+            if (gameMode && selectedTheme) {
+                startGameBtn.disabled = false;
+            } else {
+                startGameBtn.disabled = true;
+            }
+        }
+    }
+    
+    function applyTheme(themeKey) {
+        const theme = THEMES[themeKey];
+        const root = document.documentElement;
+        
+        root.style.setProperty('--red-color', theme.colors.red);
+        root.style.setProperty('--blue-color', theme.colors.blue);
+        root.style.setProperty('--green-color', theme.colors.green);
+        root.style.setProperty('--bg-color', theme.colors.bg);
+        root.style.setProperty('--text-color', theme.colors.text);
+
+        document.body.classList.remove('neon-disco-theme', 'mrc-theme');
+        if (theme.special) {
+             if(themeKey === 'neon-disco') document.body.classList.add('neon-disco-theme');
+             if(themeKey === 'mrc') document.body.classList.add('mrc-theme');
+        }
+    }
+
+    // --- Game Logic ---
+    function getDailyChallengeColor() {
+        const day = new Date().getUTCDay(); // Sunday = 0, Monday = 1, etc. (UTC)
+        const colors = ['red', 'blue', 'green', 'red', 'blue', 'green', 'red'];
+        return colors[day];
+    }
+
+    function startGame() {
+        isGameOver = false;
+        score = 0;
+        priorityColor = null;
+        
+        document.querySelectorAll('.tank-fill').forEach(t => t.classList.remove('pulsing-fill'));
+        dailyDrainMultiplier = DAILY_DRAIN_RATE_MULTIPLIER;
+
+
+        // Reset stats for new game
+        totalWordsFound = 0;
+        longWordsFound = 0;
+        longestWord = '';
+        currentStreak = 0;
+        bestStreak = 0;
+
+        colourBanks = { red: INITIAL_BANK_LEVEL, blue: INITIAL_BANK_LEVEL, green: INITIAL_BANK_LEVEL };
+        currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
+        gameOverModal.classList.add('hidden');
+        
+        wordDisplay.classList.remove('opacity-0');
+        messageEl.classList.add('opacity-0');
+        speedIndicatorContainer.classList.add('opacity-0');
+
+        if (gameMode === 'frantic') {
+            updateSpeedDisplay();
+            subtitle.textContent = "Find words to restore the coloured banks!";
+        } else if (gameMode === 'daily') {
+            priorityColor = getDailyChallengeColor();
+            subtitle.textContent = `Daily Challenge: Don't let the ${priorityColor.toUpperCase()} tank drain!`;
+        } else if (gameMode === 'zen') {
+            subtitle.textContent = "Find words. No pressure.";
+        }
+
+        generateGrid();
+        renderBanks();
+        if (gameMode !== 'zen') {
+            startDrain();
+        }
+    }
+    
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+    function generateLetters(){
+      const totalTiles = GRID_SIZE * GRID_SIZE;
+      const vowelCount = 9 + Math.floor(Math.random() * 2); // Guarantees 9 or 10 vowels
+      const consonantCount = totalTiles - vowelCount;
+      const letters = [];
+      for(let i=0;i<vowelCount;i++) letters.push(VOWELS[Math.floor(Math.random()*VOWELS.length)]);
+      for(let i=0;i<consonantCount;i++) letters.push(CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)]);
+      return shuffle(letters);
+    }
+    
+    function generateGrid() {
+        // For a real daily challenge, you would use the date as a seed for the random number generator
+        // to ensure every player gets the same grid. For this implementation, it remains random.
+        const letters = generateLetters();
+        const colorDist = [...new Array(8).fill(COLORS[0]), ...new Array(8).fill(COLORS[1]), ...new Array(9).fill(COLORS[2])];
+        const colours = shuffle(colorDist);
+        grid = [];
+        for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
+            grid.push({ id: `tile-${i}`, letter: letters[i], colorName: colours[i].name });
+        }
+
+        gridContainer.innerHTML = '';
+        grid.forEach((tile, i) => {
+            const el = document.createElement('div');
+            el.id = tile.id;
+            el.dataset.index = String(i);
+            el.className = `tile ${COLORS.find(c => c.name === tile.colorName).class}`;
+            
+            const letterSpan = document.createElement('span');
+            letterSpan.textContent = tile.letter.toUpperCase();
+            el.appendChild(letterSpan);
+
+            const currentTheme = THEMES[selectedTheme];
+            if (currentTheme.textColorOverride && currentTheme.textColorOverride[tile.colorName]) {
+                letterSpan.style.color = currentTheme.textColorOverride[tile.colorName];
+            }
+            gridContainer.appendChild(el);
+        });
+    }
+    
+    function drainBanks(){
+      if (isGameOver) return;
+      COLORS.forEach(c => { 
+        let drainRate = BASE_DRAIN_RATE;
+        if (gameMode === 'daily' && c.name === priorityColor) {
+            drainRate *= dailyDrainMultiplier;
+        }
+        colourBanks[c.name] = Math.max(0, colourBanks[c.name] - drainRate);
+        
+        if (gameMode === 'daily' && c.name === priorityColor && colourBanks[c.name] <= 0) {
+            endGame();
+        }
       });
-  }
-
-  function setupStartupScreen() {
-    // Set daily challenge description dynamically
-    const dailyColor = getDailyChallengeColor();
-    dailyChallengeDesc.textContent = `Protect the '${dailyColor.toUpperCase()}' tank.`;
-
-    Object.entries(THEMES).forEach(([key, theme]) => {
-      const option = document.createElement('option');
-      option.value = key;
-      option.textContent = theme.name;
-      themeSelect.appendChild(option);
-    });
-    modeButtons.forEach(btn => btn.addEventListener('click', () => {
-      gameMode = btn.dataset.mode;
-      modeButtons.forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-
-      if (gameMode === 'daily') {
-        themeSelectorContainer.classList.add('hidden');
-        selectedTheme = 'regular'; // Internally set to regular
-      } else {
-        themeSelectorContainer.classList.remove('hidden');
-        selectedTheme = themeSelect.value;
-      }
-
-      validateSelections();
-    }));
-    themeSelect.addEventListener('change', e => {
-      selectedTheme = e.target.value;
-      validateSelections();
-    });
-    startGameBtn.addEventListener('click', () => {
-      startupScreen.classList.add('hidden');
-      gameContainer.classList.remove('hidden');
-      
-      // Final check to ensure daily challenge always uses the regular theme
-      const themeToApply = gameMode === 'daily' ? 'regular' : selectedTheme;
-      applyTheme(themeToApply);
-      
-      startGame();
-    });
-  }
-  
-  function validateSelections() {
-    if (gameMode === 'daily') {
-      startGameBtn.disabled = false;
-    } else {
-      if (gameMode && selectedTheme) {
-        startGameBtn.disabled = false;
-      } else {
-        startGameBtn.disabled = true;
-      }
-    }
-  }
-  
-  function applyTheme(themeKey) {
-    const theme = THEMES[themeKey];
-    const root = document.documentElement;
-    
-    root.style.setProperty('--red-color', theme.colors.red);
-    root.style.setProperty('--blue-color', theme.colors.blue);
-    root.style.setProperty('--green-color', theme.colors.green);
-    root.style.setProperty('--bg-color', theme.colors.bg);
-    root.style.setProperty('--text-color', theme.colors.text);
-
-    document.body.classList.remove('neon-disco-theme', 'mrc-theme');
-    if (theme.special) {
-      if(themeKey === 'neon-disco') document.body.classList.add('neon-disco-theme');
-      if(themeKey === 'mrc') document.body.classList.add('mrc-theme');
-    }
-  }
-
-  // --- Game Logic ---
-  function getDailyChallengeColor() {
-    const day = new Date().getUTCDay(); // Sunday = 0, Monday = 1, etc. (UTC)
-    const colors = ['red', 'blue', 'green', 'red', 'blue', 'green', 'red'];
-    return colors[day];
-  }
-
-  function startGame() {
-    isGameOver = false;
-    score = 0;
-    priorityColor = null;
-    
-    document.querySelectorAll('.tank-fill').forEach(t => t.classList.remove('pulsing-fill'));
-    dailyDrainMultiplier = DAILY_DRAIN_RATE_MULTIPLIER;
-
-    // Reset stats for new game
-    totalWordsFound = 0;
-    longWordsFound = 0;
-    longestWord = '';
-    currentStreak = 0;
-    bestStreak = 0;
-
-    colourBanks = { red: INITIAL_BANK_LEVEL, blue: INITIAL_BANK_LEVEL, green: INITIAL_BANK_LEVEL };
-    currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
-    gameOverModal.classList.add('hidden');
-    
-    wordDisplay.classList.remove('opacity-0');
-    messageEl.classList.add('opacity-0');
-    speedIndicatorContainer.classList.add('opacity-0');
-
-    if (gameMode === 'frantic') {
-      updateSpeedDisplay();
-      subtitle.textContent = "Find words to restore the coloured banks!";
-    } else if (gameMode === 'daily') {
-      priorityColor = getDailyChallengeColor();
-      subtitle.textContent = `Daily Challenge: Don't let the ${priorityColor.toUpperCase()} tank drain!`;
-    } else if (gameMode === 'zen') {
-      subtitle.textContent = "Find words. No pressure.";
-    }
-
-    generateGrid();
-    renderBanks();
-    if (gameMode !== 'zen') {
-      startDrain();
-    }
-  }
-  
-  function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
-
-  function generateLetters(){
-    const totalTiles = GRID_SIZE * GRID_SIZE;
-    const vowelCount = 9 + Math.floor(Math.random() * 2); // Guarantees 9 or 10 vowels
-    const consonantCount = totalTiles - vowelCount;
-    const letters = [];
-    for(let i=0;i<vowelCount;i++) letters.push(VOWELS[Math.floor(Math.random()*VOWELS.length)]);
-    for(let i=0;i<consonantCount;i++) letters.push(CONSONANTS[Math.floor(Math.random()*CONSONANTS.length)]);
-    return shuffle(letters);
-  }
-  
-  function generateGrid() {
-    // For a real daily challenge, you would use the date as a seed for the random number generator
-    // to ensure every player gets the same grid. For this implementation, it remains random.
-    const letters = generateLetters();
-    const colorDist = [...new Array(8).fill(COLORS[0]), ...new Array(8).fill(COLORS[1]), ...new Array(9).fill(COLORS[2])];
-    const colours = shuffle(colorDist);
-    grid = [];
-    for (let i = 0; i < GRID_SIZE * GRID_SIZE; i++) {
-      grid.push({ id: `tile-${i}`, letter: letters[i], colorName: colours[i].name });
-    }
-
-    gridContainer.innerHTML = '';
-    grid.forEach((tile, i) => {
-      const el = document.createElement('div');
-      el.id = tile.id;
-      el.dataset.index = String(i);
-      el.className = `tile ${COLORS.find(c => c.name === tile.colorName).class}`;
-      
-      const letterSpan = document.createElement('span');
-      letterSpan.textContent = tile.letter.toUpperCase();
-      el.appendChild(letterSpan);
-
-      const currentTheme = THEMES[selectedTheme];
-      if (currentTheme.textColorOverride && currentTheme.textColorOverride[tile.colorName]) {
-        letterSpan.style.color = currentTheme.textColorOverride[tile.colorName];
-      }
-      gridContainer.appendChild(el);
-    });
-  }
-  
-  function drainBanks(){
-    if (isGameOver) return;
-    COLORS.forEach(c => { 
-      let drainRate = BASE_DRAIN_RATE;
-      if (gameMode === 'daily' && c.name === priorityColor) {
-        drainRate *= dailyDrainMultiplier;
-      }
-      colourBanks[c.name] = Math.max(0, colourBanks[c.name] - drainRate);
-      
-      if (gameMode === 'daily' && c.name === priorityColor && colourBanks[c.name] <= 0) {
+      renderBanks();
+      if (gameMode !== 'daily' && Object.values(colourBanks).every(v => v <= 0)) {
         endGame();
       }
-    });
-    renderBanks();
-    if (gameMode !== 'daily' && Object.values(colourBanks).every(v => v <= 0)) {
-      endGame();
-    }
-  }
-
-  function animateScore(element, start, end, duration) {
-    let startTimestamp = null;
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      element.textContent = Math.floor(progress * (end - start) + start).toLocaleString();
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
-    };
-    window.requestAnimationFrame(step);
-  }
-
-  function endGame() {
-    isGameOver = true;
-    clearInterval(drainInterval);
-    
-    const longWordBonus = longWordsFound * LONG_WORD_BONUS_POINTS;
-    const streakBonus = bestStreak * STREAK_BONUS_POINTS;
-    const finalScore = score + longWordBonus + streakBonus;
-
-    baseScoreDisplay.textContent = score.toLocaleString();
-    longWordsCount.textContent = longWordsFound;
-    longWordBonusDisplay.textContent = `+${longWordBonus.toLocaleString()}`;
-    bestStreakCount.textContent = bestStreak;
-    streakBonusDisplay.textContent = `+${streakBonus.toLocaleString()}`;
-    
-    totalWordsDisplay.textContent = totalWordsFound;
-    longestWordDisplay.textContent = longestWord.toUpperCase() || '-';
-
-    gameOverModal.classList.remove('hidden');
-    animateScore(finalScoreEl, score, finalScore, 1000);
-  }
-
-  function startDrain(){ clearInterval(drainInterval); drainInterval = setInterval(drainBanks, currentDrainIntervalMs); }
-
-  function checkDailySpeedUp(currentScore) {
-    const threshold = Math.floor(currentScore / DAILY_SCORE_THRESHOLD);
-    const newMultiplier = DAILY_DRAIN_RATE_MULTIPLIER + (threshold * DAILY_SPEED_INCREASE);
-    if (newMultiplier > dailyDrainMultiplier) {
-      dailyDrainMultiplier = newMultiplier;
-      flashTargetTank();
-    }
-  }
-
-  function checkFranticSpeedUp(oldScore, newScore) {
-    if (gameMode !== 'frantic') return false;
-    const oldThreshold = Math.floor(oldScore / COMPETITION_SCORE_THRESHOLD);
-    const newThreshold = Math.floor(newScore / COMPETITION_SCORE_THRESHOLD);
-    if (newThreshold > oldThreshold) {
-      const newInterval = Math.max(MIN_DRAIN_INTERVAL, BASE_DRAIN_INTERVAL_MS - (newThreshold * COMPETITION_SPEED_INCREASE));
-      if (newInterval < currentDrainIntervalMs) {
-        currentDrainIntervalMs = newInterval;
-        
-        clearTimeout(messageTimeout);
-        wordDisplay.classList.add('opacity-0');
-        messageEl.classList.add('opacity-0');
-        
-        updateSpeedDisplay();
-        speedIndicatorContainer.classList.remove('opacity-0');
-        speedUpText.classList.remove('opacity-0');
-        
-        messageTimeout = setTimeout(() => {
-          speedUpText.classList.add('opacity-0');
-          speedIndicatorContainer.classList.add('opacity-0');
-          wordDisplay.classList.remove('opacity-0');
-        }, 800);
-
-        startDrain();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function flashTargetTank() {
-    if (!priorityColor || gameMode !== 'daily') return;
-    const tankFill = document.getElementById(`${priorityColor}-bank`);
-    if (!tankFill) return;
-
-    let flashes = 0;
-    const flashInterval = setInterval(() => {
-      tankFill.style.filter = flashes % 2 === 0 ? 'brightness(1.5)' : '';
-      flashes++;
-      if (flashes >= 6) { // 3 on/off cycles = 6 states
-        clearInterval(flashInterval);
-        tankFill.style.filter = ''; // Reset to normal
-      }
-    }, 250); // 0.25s per state (on/off), total 1.5s for 3 flashes
-  }
-
-  // --- Tile Selection Logic ---
-  function areAdjacent(idx1, idx2) {
-    const r1 = Math.floor(idx1 / GRID_SIZE), c1 = idx1 % GRID_SIZE;
-    const r2 = Math.floor(idx2 / GRID_SIZE), c2 = idx2 % GRID_SIZE;
-    return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
-  }
-
-  function handleSelectionStart(e) { 
-    if (isGameOver) return;
-
-    let targetElement;
-    if (e.type === 'mousedown') {
-      targetElement = e.target;
-    } else if (e.type === 'touchstart') {
-      if (activeTouchId !== null) return;
-      const touch = e.changedTouches[0];
-      activeTouchId = touch.identifier;
-      targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
     }
 
-    if (targetElement && targetElement.closest('.tile')) {
-      isSelecting = true; 
-      resetSelection(); 
-      selectTile(targetElement); 
-    }
-  }
-
-  function handleSelectionMove(e) {
-    if (!isSelecting || isGameOver) return;
-    
-    if (isSelecting) {
-      e.preventDefault();
-    }
-
-    let targetElement;
-    let clientX, clientY;
-    if (e.type === 'mouseover' || e.type === 'mousemove') {
-      targetElement = e.target;
-      clientX = e.clientX;
-      clientY = e.clientY;
-    } else if (e.type === 'touchmove') {
-      const touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
-      if (!touch) return;
-      clientX = touch.clientX;
-      clientY = touch.clientY;
-      targetElement = document.elementFromPoint(clientX, clientY);
-    }
-
-    if (!targetElement) return;
-
-    const tileContainer = targetElement.closest('.tile');
-    const lastSelected = currentSelection.length > 0 ? currentSelection[currentSelection.length - 1] : null;
-
-    if (tileContainer && lastSelected && !currentSelection.includes(tileContainer) && areAdjacent(Number(lastSelected.dataset.index), Number(tileContainer.dataset.index))) {
-      // Get tile dimensions and position
-      const rect = tileContainer.getBoundingClientRect();
-      const tileSize = parseFloat(getComputedStyle(tileContainer).width); // Use width as tile is square
-      const activationSize = tileSize * 0.7; // 70% of tile size for central zone
-      const offsetX = rect.left + (tileSize - activationSize) / 2; // Center X
-      const offsetY = rect.top + (tileSize - activationSize) / 2; // Center Y
-
-      // Check if click/touch is within the central 70% zone
-      if (clientX >= offsetX && clientX <= offsetX + activationSize &&
-          clientY >= offsetY && clientY <= offsetY + activationSize) {
-        selectTile(targetElement);
-      }
-    }
-  }
-
-  function handleSelectionEnd(e) {
-    let isOurTouch = false;
-    if(e.type === 'mouseup') {
-      isOurTouch = true;
-    } else if (e.type === 'touchend' || e.type === 'touchcancel') {
-      if(Array.from(e.changedTouches).some(t => t.identifier === activeTouchId)){
-        isOurTouch = true;
-        activeTouchId = null;
-      }
-    }
-    
-    if (isSelecting && isOurTouch) {
-      isSelecting = false;
-      if (currentSelection.length >= MIN_WORD_LENGTH) validateWord();
-      else resetSelection();
-    }
-  }
-
-  function selectTile(el) {
-    const tileContainer = el.closest('.tile');
-    if (!tileContainer || currentSelection.includes(tileContainer)) return;
-    tileContainer.classList.add('selected');
-    currentSelection.push(tileContainer);
-    wordDisplay.textContent = currentSelection.map(t => t.querySelector('span').textContent).join('');
-  }
-
-  function resetSelection() {
-    currentSelection.forEach(t => t.classList.remove('selected'));
-    currentSelection = [];
-    wordDisplay.textContent = '';
-  }
-
-  // --- Word Validation & Scoring ---
-  function validateWord() {
-    const word = currentSelection.map(t => t.querySelector('span').textContent.toLowerCase()).join('');
-    if (word.length < MIN_WORD_LENGTH) {
-      showMessage('Word too short!', 'text-yellow-400');
-      currentStreak = 0; // Reset streak on invalid attempt
-      resetSelection();
-      return;
-    }
-    if (bannedWords.has(word)) {
-      showMessage('Word not allowed!', 'text-red-400');
-      currentStreak = 0; // Reset streak on invalid attempt
-      resetSelection();
-      return;
-    }
-
-    if (wordSet.has(word)) {
-      // --- STATS ---
-      totalWordsFound++;
-      currentStreak++;
-      bestStreak = Math.max(bestStreak, currentStreak);
-      if (word.length >= BONUS_WORD_LENGTH) {
-        longWordsFound++;
-      }
-      if (word.length > longestWord.length) {
-        longestWord = word;
-      }
-
-      const colorCounts = { red: 0, blue: 0, green: 0 };
-      currentSelection.forEach(el => colorCounts[grid[Number(el.dataset.index)].colorName]++);
-      for (const color in colorCounts) {
-        colourBanks[color] = Math.min(MAX_BANK_LEVEL, colourBanks[color] + colorCounts[color]);
-      }
-
-      const isLongWord = word.length >= LONG_WORD_THRESHOLD;
-      const points = isLongWord ? Math.floor(currentSelection.length * LONG_WORD_BONUS_MULTIPLIER) : currentSelection.length;
-      const oldScore = score;
-      score += points;
-      
-      if (gameMode === 'daily') {
-        checkDailySpeedUp(score);
-      }
-
-      const didSpeedUp = checkFranticSpeedUp(oldScore, score);
-
-      if (!didSpeedUp) {
-        let successMsg = `+${points} pts!`;
-        if (isLongWord) successMsg += ' (Bonus!)';
-        showMessage(successMsg, 'text-green-400');
-      }
-      replaceUsedTiles();
-    } else {
-      showMessage('Not a valid word!', 'text-red-400');
-      currentStreak = 0; // Reset streak on invalid attempt
-    }
-    resetSelection();
-    renderBanks();
-  }
-
-  function replaceUsedTiles() {
-    const lettersPool = shuffle(generateLetters());
-    const usedColorNames = currentSelection.map(el => grid[Number(el.dataset.index)].colorName);
-    let letterIndex = 0;
-    
-    currentSelection.forEach(el => {
-      const idx = Number(el.dataset.index);
-      const newLetter = lettersPool[letterIndex++ % lettersPool.length];
-
-      grid[idx].letter = newLetter;
-      const letterSpan = el.querySelector('span');
-      if (letterSpan) {
-        letterSpan.textContent = grid[idx].letter.toUpperCase();
-      }
-      
-      const newColorName = usedColorNames[Math.floor(Math.random() * usedColorNames.length)];
-      grid[idx].colorName = newColorName;
-      
-      let oldColorClass = '';
-      for(const c of COLORS) {
-        if (el.classList.contains(c.class)) {
-          oldColorClass = c.class;
-          break;
-        }
-      }
-      if (oldColorClass) el.classList.remove(oldColorClass);
-
-      const newColor = COLORS.find(c => c.name === newColorName);
-      el.classList.add(newColor.class);
-      
-      const currentTheme = THEMES[selectedTheme];
-      if (letterSpan && currentTheme.textColorOverride && currentTheme.textColorOverride[newColorName]) {
-        letterSpan.style.color = currentTheme.textColorOverride[newColorName];
-      } else if (letterSpan) {
-        letterSpan.style.color = '';
-      }
-    });
-    balanceColors();
-    balanceVowels();
-  }
-  
-  // --- UI & Rendering ---
-  function updateSpeedDisplay() {
-    if (gameMode !== 'frantic') return;
-    const level = Math.floor(score / COMPETITION_SCORE_THRESHOLD);
-    const mph = MPH_LEVELS[Math.min(level, MPH_LEVELS.length - 1)];
-    speedMphDisplay.textContent = `${mph} MPH`;
-  }
-
-  function isVowel(letter) {
-    return 'aeiou'.includes(letter.toLowerCase());
-  }
-
-  function balanceVowels() {
-    const MIN_VOWELS = 9;
-    const MAX_VOWELS = 10;
-    let currentVowels = grid.filter(tile => isVowel(tile.letter)).length;
-
-    const allIndices = Array.from({length: grid.length}, (_, i) => i);
-    
-    // Add vowels if count is too low
-    while (currentVowels < MIN_VOWELS) {
-      const consonantIndices = allIndices.filter(i => !isVowel(grid[i].letter));
-      if (consonantIndices.length === 0) break; 
-
-      const indexToChange = consonantIndices[Math.floor(Math.random() * consonantIndices.length)];
-      grid[indexToChange].letter = VOWELS[Math.floor(Math.random() * VOWELS.length)];
-      
-      const el = document.getElementById(grid[indexToChange].id);
-      el.querySelector('span').textContent = grid[indexToChange].letter.toUpperCase();
-      currentVowels++;
-    }
-
-    // Remove vowels if count is too high
-    while (currentVowels > MAX_VOWELS) {
-      const vowelIndices = allIndices.filter(i => isVowel(grid[i].letter));
-      if (vowelIndices.length === 0) break;
-
-      const indexToChange = vowelIndices[Math.floor(Math.random() * vowelIndices.length)];
-      grid[indexToChange].letter = CONSONANTS[Math.floor(Math.random() * CONSONANTS.length)];
-
-      const el = document.getElementById(grid[indexToChange].id);
-      el.querySelector('span').textContent = grid[indexToChange].letter.toUpperCase();
-      currentVowels--;
-    }
-  }
-
-  function balanceColors() {
-    const counts = { red: 0, blue: 0, green: 0 };
-    grid.forEach(tile => counts[tile.colorName]++);
-    const minCount = 8;
-
-    for (const color of COLORS) {
-      while (counts[color.name] < minCount) {
-        const donorColor = COLORS.find(c => counts[c.name] > minCount);
-        if (!donorColor) {
-          break;
+    function animateScore(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            element.textContent = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
         };
+        window.requestAnimationFrame(step);
+    }
 
-        const donorIndex = grid.findIndex(t => t.colorName === donorColor.name);
-        if (donorIndex === -1) break;
-
-        grid[donorIndex].colorName = color.name;
-        const el = document.getElementById(grid[donorIndex].id);
+    function endGame() {
+        isGameOver = true;
+        clearInterval(drainInterval);
         
-        const oldColorClass = COLORS.find(c => c.name === donorColor.name).class;
-        const newColorClass = COLORS.find(c => c.name === color.name).class;
-        el.classList.remove(oldColorClass);
-        el.classList.add(newColorClass);
+        const longWordBonus = longWordsFound * LONG_WORD_BONUS_POINTS;
+        const streakBonus = bestStreak * STREAK_BONUS_POINTS;
+        const finalScore = score + longWordBonus + streakBonus;
 
-        const letterSpan = el.querySelector('span');
-        const currentTheme = THEMES[selectedTheme];
-        if (letterSpan && currentTheme.textColorOverride) {
-          if (currentTheme.textColorOverride[color.name]) {
-            letterSpan.style.color = currentTheme.textColorOverride[color.name];
-          } else {
-            letterSpan.style.color = '';
-          }
+        baseScoreDisplay.textContent = score.toLocaleString();
+        longWordsCount.textContent = longWordsFound;
+        longWordBonusDisplay.textContent = `+${longWordBonus.toLocaleString()}`;
+        bestStreakCount.textContent = bestStreak;
+        streakBonusDisplay.textContent = `+${streakBonus.toLocaleString()}`;
+        
+        totalWordsDisplay.textContent = totalWordsFound;
+        longestWordDisplay.textContent = longestWord.toUpperCase() || '-';
+
+        gameOverModal.classList.remove('hidden');
+        animateScore(finalScoreEl, score, finalScore, 1000);
+    }
+
+    function startDrain(){ clearInterval(drainInterval); drainInterval = setInterval(drainBanks, currentDrainIntervalMs); }
+
+    function checkDailySpeedUp(currentScore) {
+        const threshold = Math.floor(currentScore / DAILY_SCORE_THRESHOLD);
+        dailyDrainMultiplier = DAILY_DRAIN_RATE_MULTIPLIER + (threshold * DAILY_SPEED_INCREASE);
+    }
+
+    function checkFranticSpeedUp(oldScore, newScore) {
+        if (gameMode !== 'frantic') return false;
+        const oldThreshold = Math.floor(oldScore / COMPETITION_SCORE_THRESHOLD);
+        const newThreshold = Math.floor(newScore / COMPETITION_SCORE_THRESHOLD);
+        if (newThreshold > oldThreshold) {
+            const newInterval = Math.max(MIN_DRAIN_INTERVAL, BASE_DRAIN_INTERVAL_MS - (newThreshold * COMPETITION_SPEED_INCREASE));
+            if (newInterval < currentDrainIntervalMs) {
+                currentDrainIntervalMs = newInterval;
+                
+                clearTimeout(messageTimeout);
+                wordDisplay.classList.add('opacity-0');
+                messageEl.classList.add('opacity-0');
+                
+                updateSpeedDisplay();
+                speedIndicatorContainer.classList.remove('opacity-0');
+                speedUpText.classList.remove('opacity-0');
+                
+                messageTimeout = setTimeout(() => {
+                    speedUpText.classList.add('opacity-0');
+                    speedIndicatorContainer.classList.add('opacity-0');
+                    wordDisplay.classList.remove('opacity-0');
+                }, 800);
+
+                startDrain();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // --- Tile Selection Logic ---
+    function areAdjacent(idx1, idx2) {
+        const r1 = Math.floor(idx1 / GRID_SIZE), c1 = idx1 % GRID_SIZE;
+        const r2 = Math.floor(idx2 / GRID_SIZE), c2 = idx2 % GRID_SIZE;
+        return Math.abs(r1 - r2) <= 1 && Math.abs(c1 - c2) <= 1;
+    }
+
+    function handleSelectionStart(e) { 
+        if (isGameOver) return;
+
+        let targetElement;
+        if (e.type === 'mousedown') {
+            targetElement = e.target;
+        } else if (e.type === 'touchstart') {
+            if (activeTouchId !== null) return;
+            const touch = e.changedTouches[0];
+            activeTouchId = touch.identifier;
+            targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
         }
 
-        counts[color.name]++;
-        counts[donorColor.name]--;
-      }
+        const tileContainer = targetElement ? targetElement.closest('.tile') : null;
+        if (tileContainer) {
+            isSelecting = true; 
+            resetSelection(); 
+            selectTile(tileContainer); 
+        }
     }
-  }
-  function renderBanks(){
-    for(const c of COLORS){
-      const fill = document.getElementById(`${c.name}-bank`);
-      if (fill) {
-        // Ensure the fill level is initialized correctly
-        const fillLevel = (colourBanks[c.name] / MAX_BANK_LEVEL) * 100;
-        if (document.body.clientWidth <= 767) {
-          fill.style.width = `${fillLevel}%`;
-          fill.style.height = '100%';
+
+    function handleSelectionMove(e) {
+        if (!isSelecting || isGameOver) return;
+        
+        if (isSelecting) {
+            e.preventDefault();
+        }
+
+        let targetElement;
+        if (e.type === 'mouseover' || e.type === 'mousemove') {
+            targetElement = e.target;
+        } else if (e.type === 'touchmove') {
+            const touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId);
+            if (!touch) return;
+            targetElement = document.elementFromPoint(touch.clientX, touch.clientY);
+        }
+
+        if (!targetElement) return;
+
+        // Use .closest() to ensure we always get the tile, even if the inner span is the target
+        const tileContainer = targetElement.closest('.tile');
+        const lastSelected = currentSelection.length > 0 ? currentSelection[currentSelection.length - 1] : null;
+
+        if (tileContainer && lastSelected && !currentSelection.includes(tileContainer) && areAdjacent(Number(lastSelected.dataset.index), Number(tileContainer.dataset.index))) {
+            selectTile(tileContainer);
+        }
+    }
+
+    function handleSelectionEnd(e) {
+        let isOurTouch = false;
+        if(e.type === 'mouseup') {
+            isOurTouch = true;
+        } else if (e.type === 'touchend' || e.type === 'touchcancel') {
+            if(Array.from(e.changedTouches).some(t => t.identifier === activeTouchId)){
+                 isOurTouch = true;
+                 activeTouchId = null;
+            }
+        }
+        
+        if (isSelecting && isOurTouch) {
+            isSelecting = false;
+            if (currentSelection.length >= MIN_WORD_LENGTH) validateWord();
+            else resetSelection();
+        }
+    }
+
+    function selectTile(el) {
+        // el is now guaranteed to be the tile container from handleSelectionMove/Start
+        if (!el || currentSelection.includes(el)) return;
+        el.classList.add('selected');
+        currentSelection.push(el);
+        wordDisplay.textContent = currentSelection.map(t => t.querySelector('span').textContent).join('');
+    }
+
+    function resetSelection() {
+        currentSelection.forEach(t => t.classList.remove('selected'));
+        currentSelection = [];
+        wordDisplay.textContent = '';
+    }
+
+    // --- Word Validation & Scoring ---
+    function validateWord() {
+        const word = currentSelection.map(t => t.querySelector('span').textContent.toLowerCase()).join('');
+        if (word.length < MIN_WORD_LENGTH) {
+            showMessage('Word too short!', 'text-yellow-400');
+            currentStreak = 0; // Reset streak on invalid attempt
+            resetSelection();
+            return;
+        }
+        if (bannedWords.has(word)) {
+            showMessage('Word not allowed!', 'text-red-400');
+            currentStreak = 0; // Reset streak on invalid attempt
+            resetSelection();
+            return;
+        }
+
+        if (wordSet.has(word)) {
+            // --- STATS ---
+            totalWordsFound++;
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+            if (word.length >= BONUS_WORD_LENGTH) {
+                longWordsFound++;
+            }
+            if (word.length > longestWord.length) {
+                longestWord = word;
+            }
+
+            const colorCounts = { red: 0, blue: 0, green: 0 };
+            currentSelection.forEach(el => colorCounts[grid[Number(el.dataset.index)].colorName]++);
+            for (const color in colorCounts) {
+                colourBanks[color] = Math.min(MAX_BANK_LEVEL, colourBanks[color] + colorCounts[color]);
+            }
+
+            const isLongWord = word.length >= LONG_WORD_THRESHOLD;
+            const points = isLongWord ? Math.floor(currentSelection.length * LONG_WORD_BONUS_MULTIPLIER) : currentSelection.length;
+            const oldScore = score;
+            score += points;
+            
+            if (gameMode === 'daily') {
+                checkDailySpeedUp(score);
+            }
+
+            const didSpeedUp = checkFranticSpeedUp(oldScore, score);
+
+            if (!didSpeedUp) {
+                let successMsg = `+${points} pts!`;
+                if (isLongWord) successMsg += ' (Bonus!)';
+                showMessage(successMsg, 'text-green-400');
+            }
+            replaceUsedTiles();
         } else {
-          fill.style.height = `${fillLevel}%`;
-          fill.style.width = '100%';
+            showMessage('Not a valid word!', 'text-red-400');
+            currentStreak = 0; // Reset streak on invalid attempt
         }
-        fill.style.filter = `brightness(${0.7 + colourBanks[c.name] / MAX_BANK_LEVEL * 0.3})`;
+        resetSelection();
+        renderBanks();
+    }
+
+    function replaceUsedTiles() {
+        const lettersPool = shuffle(generateLetters());
+        const usedColorNames = currentSelection.map(el => grid[Number(el.dataset.index)].colorName);
+        let letterIndex = 0;
+        
+        currentSelection.forEach(el => {
+            const idx = Number(el.dataset.index);
+            const newLetter = lettersPool[letterIndex++ % lettersPool.length];
+
+            grid[idx].letter = newLetter;
+            const letterSpan = el.querySelector('span');
+            if (letterSpan) {
+                letterSpan.textContent = grid[idx].letter.toUpperCase();
+            }
+            
+            const newColorName = usedColorNames[Math.floor(Math.random() * usedColorNames.length)];
+            grid[idx].colorName = newColorName;
+            
+            let oldColorClass = '';
+            for(const c of COLORS) {
+                if (el.classList.contains(c.class)) {
+                    oldColorClass = c.class;
+                    break;
+                }
+            }
+            if (oldColorClass) el.classList.remove(oldColorClass);
+
+            const newColor = COLORS.find(c => c.name === newColorName);
+            el.classList.add(newColor.class);
+            
+            const currentTheme = THEMES[selectedTheme];
+            if (letterSpan && currentTheme.textColorOverride && currentTheme.textColorOverride[newColorName]) {
+                letterSpan.style.color = currentTheme.textColorOverride[newColorName];
+            } else if (letterSpan) {
+                letterSpan.style.color = '';
+            }
+        });
+        balanceColors();
+        balanceVowels();
+    }
+    
+    // --- UI & Rendering ---
+    function updateSpeedDisplay() {
+        if (gameMode !== 'frantic') return;
+        const level = Math.floor(score / COMPETITION_SCORE_THRESHOLD);
+        const mph = MPH_LEVELS[Math.min(level, MPH_LEVELS.length - 1)];
+        speedMphDisplay.textContent = `${mph} MPH`;
+    }
+
+    function isVowel(letter) {
+        return 'aeiou'.includes(letter.toLowerCase());
+    }
+
+    function balanceVowels() {
+        const MIN_VOWELS = 9;
+        const MAX_VOWELS = 10;
+        let currentVowels = grid.filter(tile => isVowel(tile.letter)).length;
+
+        const allIndices = Array.from({length: grid.length}, (_, i) => i);
+        
+        // Add vowels if count is too low
+        while (currentVowels < MIN_VOWELS) {
+            const consonantIndices = allIndices.filter(i => !isVowel(grid[i].letter));
+            if (consonantIndices.length === 0) break; 
+
+            const indexToChange = consonantIndices[Math.floor(Math.random() * consonantIndices.length)];
+            grid[indexToChange].letter = VOWELS[Math.floor(Math.random() * VOWELS.length)];
+            
+            const el = document.getElementById(grid[indexToChange].id);
+            el.querySelector('span').textContent = grid[indexToChange].letter.toUpperCase();
+            currentVowels++;
+        }
+
+        // Remove vowels if count is too high
+        while (currentVowels > MAX_VOWELS) {
+            const vowelIndices = allIndices.filter(i => isVowel(grid[i].letter));
+            if (vowelIndices.length === 0) break;
+
+            const indexToChange = vowelIndices[Math.floor(Math.random() * vowelIndices.length)];
+            grid[indexToChange].letter = CONSONANTS[Math.floor(Math.random() * CONSONANTS.length)];
+
+            const el = document.getElementById(grid[indexToChange].id);
+            el.querySelector('span').textContent = grid[indexToChange].letter.toUpperCase();
+            currentVowels--;
+        }
+    }
+
+    function balanceColors() {
+        const counts = { red: 0, blue: 0, green: 0 };
+        grid.forEach(tile => counts[tile.colorName]++);
+        const minCount = 8;
+
+        for (const color of COLORS) {
+            while (counts[color.name] < minCount) {
+                const donorColor = COLORS.find(c => counts[c.name] > minCount);
+                if (!donorColor) {
+                    break;
+                };
+
+                const donorIndex = grid.findIndex(t => t.colorName === donorColor.name);
+                if (donorIndex === -1) break;
+
+                grid[donorIndex].colorName = color.name;
+                const el = document.getElementById(grid[donorIndex].id);
+                
+                const oldColorClass = COLORS.find(c => c.name === donorColor.name).class;
+                const newColorClass = COLORS.find(c => c.name === color.name).class;
+                el.classList.remove(oldColorClass);
+                el.classList.add(newColorClass);
+
+                const letterSpan = el.querySelector('span');
+                const currentTheme = THEMES[selectedTheme];
+                if (letterSpan && currentTheme.textColorOverride) {
+                    if (currentTheme.textColorOverride[color.name]) {
+                        letterSpan.style.color = currentTheme.textColorOverride[color.name];
+                    } else {
+                        letterSpan.style.color = '';
+                    }
+                }
+
+                counts[color.name]++;
+                counts[donorColor.name]--;
+            }
+        }
+    }
+    function renderBanks(){
+      for(const c of COLORS){
+        const fill = document.getElementById(`${c.name}-bank`);
+        if (fill) {
+            // Ensure the fill level is initialized correctly
+            const fillLevel = (colourBanks[c.name] / MAX_BANK_LEVEL) * 100;
+            if (document.body.clientWidth <= 767) {
+                fill.style.width = `${fillLevel}%`;
+                fill.style.height = '100%';
+            } else {
+                fill.style.height = `${fillLevel}%`;
+                fill.style.width = '100%';
+            }
+            fill.style.filter = `brightness(${0.7 + colourBanks[c.name] / MAX_BANK_LEVEL * 0.3})`;
+        }
       }
+      scoreEl.textContent = `Score: ${score}`;
     }
-    scoreEl.textContent = `Score: ${score}`;
-  }
 
-  function showMessage(msg, cls){
-    clearTimeout(messageTimeout);
+    function showMessage(msg, cls){
+      clearTimeout(messageTimeout);
 
-    if (lastMessageColor) {
-      messageEl.classList.remove(lastMessageColor);
+      if (lastMessageColor) {
+        messageEl.classList.remove(lastMessageColor);
+      }
+      
+      messageEl.classList.add(cls);
+      lastMessageColor = cls;
+      
+      messageEl.textContent = msg;
+      
+      wordDisplay.classList.add('opacity-0');
+      speedIndicatorContainer.classList.add('opacity-0');
+      messageEl.classList.remove('opacity-0');
+      
+      messageTimeout = setTimeout(() => { 
+        messageEl.classList.add('opacity-0');
+        wordDisplay.classList.remove('opacity-0');
+      }, 800);
     }
     
-    messageEl.classList.add(cls);
-    lastMessageColor = cls;
-    
-    messageEl.textContent = msg;
-    
-    wordDisplay.classList.add('opacity-0');
-    speedIndicatorContainer.classList.add('opacity-0');
-    messageEl.classList.remove('opacity-0');
-    
-    messageTimeout = setTimeout(() => { 
-      messageEl.classList.add('opacity-0');
-      wordDisplay.classList.remove('opacity-0');
-    }, 800);
-  }
+    // --- Event Listeners (Robust Version) ---
+    gridContainer.addEventListener('mousedown', handleSelectionStart);
+    window.addEventListener('mousemove', handleSelectionMove);
+    window.addEventListener('mouseup', handleSelectionEnd);
 
-  function shareStats() {
-    const finalScore = parseInt(finalScoreEl.textContent);
-    const totalWords = parseInt(totalWordsDisplay.textContent);
-    const longestWord = longestWordDisplay.textContent;
-    const stats = `Draino Stats - ${new Date().toLocaleDateString()}\nFinal Score: ${finalScore}\nTotal Words Found: ${totalWords}\nLongest Word: ${longestWord}`;
+    gridContainer.addEventListener('touchstart', handleSelectionStart, { passive: true });
+    window.addEventListener('touchmove', handleSelectionMove, { passive: false });
+    window.addEventListener('touchend', handleSelectionEnd);
+    window.addEventListener('touchcancel', handleSelectionEnd);
     
-    navigator.clipboard.writeText(stats).then(() => {
-      showMessage('Stats copied to clipboard!', 'text-green-400');
-    }).catch(err => {
-      showMessage('Failed to copy stats!', 'text-red-400');
-      console.error('Clipboard error:', err);
+    restartButton.addEventListener('click', () => {
+        gameOverModal.classList.add('hidden');
+        startupScreen.classList.remove('hidden');
+        gameContainer.classList.add('hidden');
+
+        // Reset share button text
+        shareButton.textContent = 'Share';
+        shareButton.classList.remove('bg-gray-500', 'cursor-not-allowed');
+        shareButton.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        
+        const root = document.documentElement;
+        root.style.setProperty('--bg-color', '#111827');
+        root.style.setProperty('--text-color', '#f9fafb');
+        themeSelect.value = "";
+        gameMode = "";
+        selectedTheme = "";
+        modeButtons.forEach(b => b.classList.remove('selected'));
+        validateSelections();
     });
-  }
-  
-  // --- Event Listeners (Robust Version) ---
-  gridContainer.addEventListener('mousedown', handleSelectionStart);
-  window.addEventListener('mousemove', handleSelectionMove);
-  window.addEventListener('mouseup', handleSelectionEnd);
 
-  gridContainer.addEventListener('touchstart', handleSelectionStart, { passive: true });
-  window.addEventListener('touchmove', handleSelectionMove, { passive: false });
-  window.addEventListener('touchend', handleSelectionEnd);
-  window.addEventListener('touchcancel', handleSelectionEnd);
-  
-  restartButton.addEventListener('click', () => {
-    gameOverModal.classList.add('hidden');
-    startupScreen.classList.remove('hidden');
-    gameContainer.classList.add('hidden');
-    
-    const root = document.documentElement;
-    root.style.setProperty('--bg-color', '#111827');
-    root.style.setProperty('--text-color', '#f9fafb');
-    themeSelect.value = "";
-    gameMode = "";
-    selectedTheme = "";
-    modeButtons.forEach(b => b.classList.remove('selected'));
-    validateSelections();
-  });
+    shareButton.addEventListener('click', () => {
+        const dailyColor = getDailyChallengeColor().toUpperCase();
+        const scoreText = finalScoreEl.textContent;
+        const longestWordText = longestWord.toUpperCase() || '-';
+        const bestStreakText = bestStreak;
+        const modeText = gameMode === 'daily' ? `Daily (${dailyColor} Day)` : gameMode.charAt(0).toUpperCase() + gameMode.slice(1);
 
-  shareButton.addEventListener('click', shareStats);
+        const shareText = `My Draino Score (${modeText}):\n\n🏆 Final Score: ${scoreText}\n🔥 Best Streak: ${bestStreakText}\n✨ Longest Word: ${longestWordText}\n\nPlay Draino!`;
 
-  // --- Start the app ---
-  document.addEventListener('DOMContentLoaded', initializeApp);
-</script>
+        const textArea = document.createElement('textarea');
+        textArea.value = shareText;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            shareButton.textContent = 'Copied!';
+            shareButton.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            shareButton.classList.add('bg-gray-500', 'cursor-not-allowed');
+        } catch (err) {
+            console.error('Failed to copy text: ', err);
+            shareButton.textContent = 'Error!';
+        }
+        document.body.removeChild(textArea);
+    });
+
+    // --- Start the app ---
+    document.addEventListener('DOMContentLoaded', initializeApp);
+
+  </script>
 </body>
 </html>
+
