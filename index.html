@@ -170,7 +170,7 @@
       <div class="text-left w-full max-w-sm mx-auto my-6 space-y-2 text-lg text-gray-300">
           <div class="flex justify-between"><span>Base Score:</span><span id="base-score-display">0</span></div>
           <div class="flex justify-between"><span>Long Word Bonus (<span id="long-words-count">0</span> x 20):</span><span id="long-word-bonus-display">+0</span></div>
-          <div class="flex justify-between"><span>Best Streak Bonus (<span id="best-streak-count">0</span> x 20):</span><span id="streak-bonus-display">+0</span></div>
+          <div class="flex justify-between"><span>Best Streak Bonus (<span id="best-streak-count">0</span> x 5):</span><span id="streak-bonus-display">+0</span></div>
       </div>
       
       <hr class="border-gray-600 w-full max-w-sm mx-auto">
@@ -195,7 +195,8 @@
     const MIN_WORD_LENGTH = 3;
     const LONG_WORD_THRESHOLD = 4;
     const BONUS_WORD_LENGTH = 5; // New constant for 5+ letter words
-    const BONUS_POINTS = 20; // New constant for bonus points
+    const LONG_WORD_BONUS_POINTS = 20; 
+    const STREAK_BONUS_POINTS = 5;
     const LONG_WORD_BONUS_MULTIPLIER = 1.5;
     const VOWELS = 'aaaaaaaeeeeeeeeeeeeiiiiiiiiooooooouuuu';
     const CONSONANTS = 'bbcccdddffgghhhkklllmmmnnnnnppprrrrrrssssstttttvvwwwyy';
@@ -457,8 +458,8 @@
         isGameOver = true;
         clearInterval(drainInterval);
         
-        const longWordBonus = longWordsFound * BONUS_POINTS;
-        const streakBonus = bestStreak * BONUS_POINTS;
+        const longWordBonus = longWordsFound * LONG_WORD_BONUS_POINTS;
+        const streakBonus = bestStreak * STREAK_BONUS_POINTS;
         const finalScore = score + longWordBonus + streakBonus;
 
         baseScoreDisplay.textContent = score.toLocaleString();
@@ -838,4 +839,5 @@
   </script>
 </body>
 </html>
+
 
