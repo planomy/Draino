@@ -17,7 +17,22 @@
         --modal-bg-color: #1f2937;
     }
 
-    body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background-color: var(--bg-color); color: var(--text-color); transition: background-color .4s ease, color .4s ease; }
+    body { 
+      font-family: 'Inter', sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+      background-color: var(--bg-color); 
+      color: var(--text-color); 
+      transition: background-color .4s ease, color .4s ease; 
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      min-height: 100vh; /* Ensure body takes full height */
+      display: flex; /* Add flexbox */
+      flex-direction: column; /* Stack children vertically */
+      justify-content: center; /* Center vertically */
+      align-items: center; /* Center horizontally */
+    }
     .tile {
       transition: transform .12s ease, filter .12s ease, box-shadow .18s ease, background-color .4s ease, border-color .4s ease;
       box-shadow: 0 4px 6px -1px rgb(0 0 0 / .2), 0 2px 4px -2px rgb(0 0 0 / .2);
@@ -73,6 +88,19 @@
     .mrc-theme .tile.bg-green-500 { border-color: var(--green-color); background-color: rgba(236, 72, 153, 0.15); }
     .mrc-theme .tank { border-width: 1px; border-color: #6b7280 !important; }
 
+    @keyframes pulse-color {
+      0%, 100% {
+        filter: brightness(1.1);
+      }
+      50% {
+        filter: brightness(1.5);
+      }
+    }
+
+    .pulsing-fill {
+      animation: pulse-color 2s infinite ease-in-out;
+    }
+
     @media (max-width: 767px) {
       #banks {
         flex-direction: column;
@@ -104,29 +132,36 @@
 </head>
 <body class="p-4">
 
-<div id="startup-screen" class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700">
+<div id="startup-screen" class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700 flex flex-col items-center">
       <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-4">Draino</h1>
       <p class="text-lg mb-6">Select a mode and theme to begin.</p>
       
-      <div class="mb-6">
+      <div class="mb-4">
           <h2 class="text-xl font-medium mb-4">Game Mode</h2>
-          <div class="flex justify-center gap-4">
-              <button data-mode="zen" class="mode-btn w-32 py-1.5 rounded-lg text-base font-medium transition-all">Peace Out</button>
-              <button data-mode="regular" class="mode-btn w-32 py-1.5 rounded-lg text-base font-medium transition-all">Regular</button>
-              <button data-mode="competition" class="mode-btn w-32 py-1.5 rounded-lg text-base font-medium transition-all">Competition</button>
+          <div class="flex justify-center items-center gap-2 md:gap-4">
+              <div class="flex flex-col items-center w-28">
+                <button data-mode="zen" class="mode-btn w-full py-1.5 rounded-lg text-base font-medium transition-all">Peace Out</button>
+                <p class="text-xs text-gray-400 mt-2 text-center h-10">Take your time and chill.</p>
+              </div>
+              <div class="flex flex-col items-center w-40">
+                <button data-mode="daily" class="mode-btn w-full py-2.5 rounded-lg text-lg font-bold transition-all uppercase">Daily Challenge</button>
+                <p id="daily-challenge-desc" class="text-xs text-gray-400 mt-2 text-center h-10"></p>
+              </div>
+              <div class="flex flex-col items-center w-28">
+                <button data-mode="frantic" class="mode-btn w-full py-1.5 rounded-lg text-base font-medium transition-all">Frantic</button>
+                <p class="text-xs text-gray-400 mt-2 text-center h-10">Accelerate every 100 points.</p>
+              </div>
           </div>
       </div>
 
-      <div class="mb-8">
-          <h2 class="text-xl font-medium mb-4">Theme</h2>
+      <div id="theme-selector-container" class="mb-4 transition-opacity duration-300">
           <select id="theme-select" class="w-full max-w-xs mx-auto p-2 rounded-lg text-base">
               <option value="" disabled selected>Select a theme...</option>
           </select>
       </div>
 
-      <button id="start-game-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:scale-100" disabled>Start Game</button>
+      <button id="start-game-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105 disabled:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed disabled:scale-100">Start Game</button>
   </div>
-
 
   <div id="game-container" class="hidden w-full max-w-5xl mx-auto">
     <header class="text-center">
@@ -135,30 +170,26 @@
       <p id="score" class="mt-2 font-bold">Score: 0</p>
     </header>
 
-    <!-- NEW: Status Display Area -->
     <div id="status-display" class="relative w-full my-2 md:my-4" style="height: 2.5rem;">
         <div id="speed-indicator-container" class="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 transition-opacity duration-300">
             <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
             <span id="speed-mph-display" class="text-base font-bold tracking-widest text-yellow-400"></span>
         </div>
-        <p id="word-display" class="absolute inset-0 flex items-center justify-center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
+        <p id="word-display" class="absolute inset-0 flex items-center justify-content: center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
         <p id="message" class="absolute inset-0 flex items-center justify-center text-base font-semibold opacity-0 transition-opacity duration-200"></p>
     </div>
 
     <div class="w-full flex flex-col md:flex-row justify-center items-center md:items-end gap-4 md:gap-10">
-        <!-- Left Column (Tanks) -->
         <div id="tanks-container" class="flex flex-col items-center w-full md:w-28 flex-shrink-0 order-2 md:order-1">
             <div id="banks" class="flex flex-row items-end justify-center gap-2">
-              <div class="tank"><div id="red-bank" class="tank-fill red" style="height:100%"></div></div>
-              <div class="tank"><div id="blue-bank" class="tank-fill blue" style="height:100%"></div></div>
-              <div class="tank"><div id="green-bank" class="tank-fill green" style="height:100%"></div></div>
+              <div class="tank"><div id="red-bank" class="tank-fill red"></div></div>
+              <div class="tank"><div id="blue-bank" class="tank-fill blue"></div></div>
+              <div class="tank"><div id="green-bank" class="tank-fill green"></div></div>
             </div>
         </div>
 
-        <!-- Center Column (Grid) -->
         <div class="grid grid-cols-5 gap-2 justify-center order-1 md:order-2" id="grid-container"></div>
         
-        <!-- Right Column (Spacer) -->
         <div class="w-28 flex-shrink-0 hidden md:block order-3"></div>
     </div>
   </div>
@@ -186,6 +217,7 @@
       </div>
 
       <button id="restart-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105">Play Again</button>
+      <button id="share-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl mt-4 transition-transform transform hover:scale-105">Share</button>
     </div>
   </div>
 
@@ -194,7 +226,7 @@
     const GRID_SIZE = 5;
     const MIN_WORD_LENGTH = 3;
     const LONG_WORD_THRESHOLD = 4;
-    const BONUS_WORD_LENGTH = 5; // New constant for 5+ letter words
+    const BONUS_WORD_LENGTH = 5; 
     const LONG_WORD_BONUS_POINTS = 20; 
     const STREAK_BONUS_POINTS = 5;
     const LONG_WORD_BONUS_MULTIPLIER = 1.5;
@@ -206,6 +238,9 @@
     const INITIAL_BANK_LEVEL = 10;
     const MAX_BANK_LEVEL = 10;
     const BASE_DRAIN_RATE = 0.1;
+    const DAILY_DRAIN_RATE_MULTIPLIER = 2;
+    const DAILY_SCORE_THRESHOLD = 75;
+    const DAILY_SPEED_INCREASE = 0.5;
     const BASE_DRAIN_INTERVAL_MS = 1000;
     const COMPETITION_SCORE_THRESHOLD = 100;
     const COMPETITION_SPEED_INCREASE = 150; // ms
@@ -223,11 +258,13 @@
     let currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
     let score = 0;
     let isGameOver = false;
-    let gameMode = ''; // 'zen', 'regular', 'competition'
+    let gameMode = ''; // 'zen', 'daily', 'frantic'
     let selectedTheme = '';
     let activeTouchId = null;
     let messageTimeout;
     let lastMessageColor = '';
+    let priorityColor = null;
+    let dailyDrainMultiplier = 1;
 
     // --- Stats Tracking ---
     let totalWordsFound = 0;
@@ -235,7 +272,6 @@
     let longestWord = '';
     let currentStreak = 0;
     let bestStreak = 0;
-
 
     // --- Themes ---
     const THEMES = {
@@ -289,6 +325,7 @@
     const restartButton = document.getElementById('restart-button');
     const startGameBtn = document.getElementById('start-game-btn');
     const themeSelect = document.getElementById('theme-select');
+    const themeSelectorContainer = document.getElementById('theme-selector-container');
     const modeButtons = document.querySelectorAll('.mode-btn');
     const speedIndicatorContainer = document.getElementById('speed-indicator-container');
     const speedUpText = document.getElementById('speed-up-text');
@@ -300,6 +337,9 @@
     const streakBonusDisplay = document.getElementById('streak-bonus-display');
     const totalWordsDisplay = document.getElementById('total-words-display');
     const longestWordDisplay = document.getElementById('longest-word-display');
+    const subtitle = document.getElementById('subtitle');
+    const dailyChallengeDesc = document.getElementById('daily-challenge-desc');
+    const shareButton = document.getElementById('share-button');
 
     // --- Initialization ---
     function initializeApp() {
@@ -315,6 +355,10 @@
     }
 
     function setupStartupScreen() {
+        // Set daily challenge description dynamically
+        const dailyColor = getDailyChallengeColor();
+        dailyChallengeDesc.textContent = `Protect the '${dailyColor.toUpperCase()}' tank.`;
+
         Object.entries(THEMES).forEach(([key, theme]) => {
             const option = document.createElement('option');
             option.value = key;
@@ -325,6 +369,15 @@
             gameMode = btn.dataset.mode;
             modeButtons.forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
+
+            if (gameMode === 'daily') {
+                themeSelectorContainer.classList.add('hidden');
+                selectedTheme = 'regular'; // Internally set to regular
+            } else {
+                themeSelectorContainer.classList.remove('hidden');
+                selectedTheme = themeSelect.value;
+            }
+
             validateSelections();
         }));
         themeSelect.addEventListener('change', e => {
@@ -334,14 +387,24 @@
         startGameBtn.addEventListener('click', () => {
             startupScreen.classList.add('hidden');
             gameContainer.classList.remove('hidden');
-            applyTheme(selectedTheme);
+            
+            // Final check to ensure daily challenge always uses the regular theme
+            const themeToApply = gameMode === 'daily' ? 'regular' : selectedTheme;
+            applyTheme(themeToApply);
+            
             startGame();
         });
     }
     
     function validateSelections() {
-        if (gameMode && selectedTheme) {
+        if (gameMode === 'daily') {
             startGameBtn.disabled = false;
+        } else {
+            if (gameMode && selectedTheme) {
+                startGameBtn.disabled = false;
+            } else {
+                startGameBtn.disabled = true;
+            }
         }
     }
     
@@ -363,9 +426,20 @@
     }
 
     // --- Game Logic ---
+    function getDailyChallengeColor() {
+        const day = new Date().getUTCDay(); // Sunday = 0, Monday = 1, etc. (UTC)
+        const colors = ['red', 'blue', 'green', 'red', 'blue', 'green', 'red'];
+        return colors[day];
+    }
+
     function startGame() {
         isGameOver = false;
         score = 0;
+        priorityColor = null;
+        
+        document.querySelectorAll('.tank-fill').forEach(t => t.classList.remove('pulsing-fill'));
+        dailyDrainMultiplier = DAILY_DRAIN_RATE_MULTIPLIER;
+
         // Reset stats for new game
         totalWordsFound = 0;
         longWordsFound = 0;
@@ -381,8 +455,14 @@
         messageEl.classList.add('opacity-0');
         speedIndicatorContainer.classList.add('opacity-0');
 
-        if (gameMode === 'competition') {
+        if (gameMode === 'frantic') {
             updateSpeedDisplay();
+            subtitle.textContent = "Find words to restore the coloured banks!";
+        } else if (gameMode === 'daily') {
+            priorityColor = getDailyChallengeColor();
+            subtitle.textContent = `Daily Challenge: Don't let the ${priorityColor.toUpperCase()} tank drain!`;
+        } else if (gameMode === 'zen') {
+            subtitle.textContent = "Find words. No pressure.";
         }
 
         generateGrid();
@@ -405,6 +485,8 @@
     }
     
     function generateGrid() {
+        // For a real daily challenge, you would use the date as a seed for the random number generator
+        // to ensure every player gets the same grid. For this implementation, it remains random.
         const letters = generateLetters();
         const colorDist = [...new Array(8).fill(COLORS[0]), ...new Array(8).fill(COLORS[1]), ...new Array(9).fill(COLORS[2])];
         const colours = shuffle(colorDist);
@@ -434,9 +516,19 @@
     
     function drainBanks(){
       if (isGameOver) return;
-      COLORS.forEach(c => { colourBanks[c.name] = Math.max(0, colourBanks[c.name] - BASE_DRAIN_RATE); });
+      COLORS.forEach(c => { 
+        let drainRate = BASE_DRAIN_RATE;
+        if (gameMode === 'daily' && c.name === priorityColor) {
+            drainRate *= dailyDrainMultiplier;
+        }
+        colourBanks[c.name] = Math.max(0, colourBanks[c.name] - drainRate);
+        
+        if (gameMode === 'daily' && c.name === priorityColor && colourBanks[c.name] <= 0) {
+            endGame();
+        }
+      });
       renderBanks();
-      if (Object.values(colourBanks).every(v => v <= 0)) {
+      if (gameMode !== 'daily' && Object.values(colourBanks).every(v => v <= 0)) {
         endGame();
       }
     }
@@ -477,8 +569,17 @@
 
     function startDrain(){ clearInterval(drainInterval); drainInterval = setInterval(drainBanks, currentDrainIntervalMs); }
 
-    function checkCompetitionSpeedUp(oldScore, newScore) {
-        if (gameMode !== 'competition') return false;
+    function checkDailySpeedUp(currentScore) {
+        const threshold = Math.floor(currentScore / DAILY_SCORE_THRESHOLD);
+        const newMultiplier = DAILY_DRAIN_RATE_MULTIPLIER + (threshold * DAILY_SPEED_INCREASE);
+        if (newMultiplier > dailyDrainMultiplier) {
+            dailyDrainMultiplier = newMultiplier;
+            flashTargetTank();
+        }
+    }
+
+    function checkFranticSpeedUp(oldScore, newScore) {
+        if (gameMode !== 'frantic') return false;
         const oldThreshold = Math.floor(oldScore / COMPETITION_SCORE_THRESHOLD);
         const newThreshold = Math.floor(newScore / COMPETITION_SCORE_THRESHOLD);
         if (newThreshold > oldThreshold) {
@@ -505,6 +606,22 @@
             }
         }
         return false;
+    }
+
+    function flashTargetTank() {
+        if (!priorityColor || gameMode !== 'daily') return;
+        const tankFill = document.getElementById(`${priorityColor}-bank`);
+        if (!tankFill) return;
+
+        let flashes = 0;
+        const flashInterval = setInterval(() => {
+            tankFill.style.filter = flashes % 2 === 0 ? 'brightness(1.5)' : '';
+            flashes++;
+            if (flashes >= 6) { // 3 on/off cycles = 6 states
+                clearInterval(flashInterval);
+                tankFill.style.filter = ''; // Reset to normal
+            }
+        }, 250); // 0.25s per state (on/off), total 1.5s for 3 flashes
     }
 
     // --- Tile Selection Logic ---
@@ -630,7 +747,12 @@
             const points = isLongWord ? Math.floor(currentSelection.length * LONG_WORD_BONUS_MULTIPLIER) : currentSelection.length;
             const oldScore = score;
             score += points;
-            const didSpeedUp = checkCompetitionSpeedUp(oldScore, score);
+            
+            if (gameMode === 'daily') {
+                checkDailySpeedUp(score);
+            }
+
+            const didSpeedUp = checkFranticSpeedUp(oldScore, score);
 
             if (!didSpeedUp) {
                 let successMsg = `+${points} pts!`;
@@ -689,7 +811,7 @@
     
     // --- UI & Rendering ---
     function updateSpeedDisplay() {
-        if (gameMode !== 'competition') return;
+        if (gameMode !== 'frantic') return;
         const level = Math.floor(score / COMPETITION_SCORE_THRESHOLD);
         const mph = MPH_LEVELS[Math.min(level, MPH_LEVELS.length - 1)];
         speedMphDisplay.textContent = `${mph} MPH`;
@@ -775,11 +897,15 @@
       for(const c of COLORS){
         const fill = document.getElementById(`${c.name}-bank`);
         if (fill) {
-          if (document.body.clientWidth <= 767) {
-            fill.style.width = `${(colourBanks[c.name] / MAX_BANK_LEVEL) * 100}%`;
-          } else {
-            fill.style.height = `${(colourBanks[c.name] / MAX_BANK_LEVEL) * 100}%`;
-          }
+            // Ensure the fill level is initialized correctly
+            const fillLevel = (colourBanks[c.name] / MAX_BANK_LEVEL) * 100;
+            if (document.body.clientWidth <= 767) {
+                fill.style.width = `${fillLevel}%`;
+                fill.style.height = '100%';
+            } else {
+                fill.style.height = `${fillLevel}%`;
+                fill.style.width = '100%';
+            }
             fill.style.filter = `brightness(${0.7 + colourBanks[c.name] / MAX_BANK_LEVEL * 0.3})`;
         }
       }
@@ -807,6 +933,20 @@
         wordDisplay.classList.remove('opacity-0');
       }, 800);
     }
+
+    function shareStats() {
+      const finalScore = parseInt(finalScoreEl.textContent);
+      const totalWords = parseInt(totalWordsDisplay.textContent);
+      const longestWord = longestWordDisplay.textContent;
+      const stats = `Draino Stats - ${new Date().toLocaleDateString()}\nFinal Score: ${finalScore}\nTotal Words Found: ${totalWords}\nLongest Word: ${longestWord}`;
+      
+      navigator.clipboard.writeText(stats).then(() => {
+        showMessage('Stats copied to clipboard!', 'text-green-400');
+      }).catch(err => {
+        showMessage('Failed to copy stats!', 'text-red-400');
+        console.error('Clipboard error:', err);
+      });
+    }
     
     // --- Event Listeners (Robust Version) ---
     gridContainer.addEventListener('mousedown', handleSelectionStart);
@@ -833,11 +973,10 @@
         validateSelections();
     });
 
+    shareButton.addEventListener('click', shareStats);
+
     // --- Start the app ---
     document.addEventListener('DOMContentLoaded', initializeApp);
-
   </script>
 </body>
 </html>
-
-
