@@ -653,11 +653,19 @@
 
         if (!targetElement) return;
 
-        // Use .closest() to ensure we always get the tile, even if the inner span is the target
         const tileContainer = targetElement.closest('.tile');
+        if (!tileContainer) return; 
+
         const lastSelected = currentSelection.length > 0 ? currentSelection[currentSelection.length - 1] : null;
 
-        if (tileContainer && lastSelected && !currentSelection.includes(tileContainer) && areAdjacent(Number(lastSelected.dataset.index), Number(tileContainer.dataset.index))) {
+        if (currentSelection.length > 1 && tileContainer === currentSelection[currentSelection.length - 2]) {
+            const tileToUnselect = currentSelection.pop();
+            tileToUnselect.classList.remove('selected');
+            wordDisplay.textContent = currentSelection.map(t => t.querySelector('span').textContent).join('');
+            return; 
+        }
+
+        if (lastSelected && !currentSelection.includes(tileContainer) && areAdjacent(Number(lastSelected.dataset.index), Number(tileContainer.dataset.index))) {
             selectTile(tileContainer);
         }
     }
@@ -681,7 +689,6 @@
     }
 
     function selectTile(el) {
-        // el is now guaranteed to be the tile container from handleSelectionMove/Start
         if (!el || currentSelection.includes(el)) return;
         el.classList.add('selected');
         currentSelection.push(el);
