@@ -165,9 +165,26 @@
 
 <div id="game-over-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4">
     <div class="w-full max-w-lg mx-auto text-center p-6 bg-gray-900 rounded-2xl shadow-2xl border border-gray-700">
-      <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-2">Game Over</h1>
-      <p class="text-lg text-gray-300 mb-4">All colours have been drained!</p>
-      <p id="final-score" class="text-2xl text-yellow-400 font-bold mb-6">Final Score: 0</p>
+      <h1 class="text-5xl font-bold tracking-wider text-cyan-400 drop-shadow-lg mb-4">Game Over</h1>
+      
+      <div class="text-left w-full max-w-sm mx-auto my-6 space-y-2 text-lg text-gray-300">
+          <div class="flex justify-between"><span>Base Score:</span><span id="base-score-display">0</span></div>
+          <div class="flex justify-between"><span>Long Word Bonus (<span id="long-words-count">0</span> x 20):</span><span id="long-word-bonus-display">+0</span></div>
+          <div class="flex justify-between"><span>Best Streak Bonus (<span id="best-streak-count">0</span> x 20):</span><span id="streak-bonus-display">+0</span></div>
+      </div>
+      
+      <hr class="border-gray-600 w-full max-w-sm mx-auto">
+      
+      <div class="mt-4">
+        <p class="text-lg text-gray-400">Final Score</p>
+        <p id="final-score" class="text-5xl text-yellow-400 font-bold">0</p>
+      </div>
+      
+      <div class="text-center w-full max-w-sm mx-auto my-6 space-y-1 text-base text-gray-400 border-t border-gray-700 pt-4 mt-6">
+          <p>Total Words Found: <span id="total-words-display" class="font-semibold text-gray-200">0</span></p>
+          <p>Longest Word: <span id="longest-word-display" class="font-semibold text-gray-200">-</span></p>
+      </div>
+
       <button id="restart-button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-lg text-xl transition-transform transform hover:scale-105">Play Again</button>
     </div>
   </div>
@@ -177,6 +194,8 @@
     const GRID_SIZE = 5;
     const MIN_WORD_LENGTH = 3;
     const LONG_WORD_THRESHOLD = 4;
+    const BONUS_WORD_LENGTH = 5; // New constant for 5+ letter words
+    const BONUS_POINTS = 20; // New constant for bonus points
     const LONG_WORD_BONUS_MULTIPLIER = 1.5;
     const VOWELS = 'aaaaaaaeeeeeeeeeeeeiiiiiiiiooooooouuuu';
     const CONSONANTS = 'bbcccdddffgghhhkklllmmmnnnnnppprrrrrrssssstttttvvwwwyy';
@@ -208,6 +227,14 @@
     let activeTouchId = null;
     let messageTimeout;
     let lastMessageColor = '';
+
+    // --- Stats Tracking ---
+    let totalWordsFound = 0;
+    let longWordsFound = 0;
+    let longestWord = '';
+    let currentStreak = 0;
+    let bestStreak = 0;
+
 
     // --- Themes ---
     const THEMES = {
@@ -265,6 +292,13 @@
     const speedIndicatorContainer = document.getElementById('speed-indicator-container');
     const speedUpText = document.getElementById('speed-up-text');
     const speedMphDisplay = document.getElementById('speed-mph-display');
+    const baseScoreDisplay = document.getElementById('base-score-display');
+    const longWordsCount = document.getElementById('long-words-count');
+    const longWordBonusDisplay = document.getElementById('long-word-bonus-display');
+    const bestStreakCount = document.getElementById('best-streak-count');
+    const streakBonusDisplay = document.getElementById('streak-bonus-display');
+    const totalWordsDisplay = document.getElementById('total-words-display');
+    const longestWordDisplay = document.getElementById('longest-word-display');
 
     // --- Initialization ---
     function initializeApp() {
@@ -331,6 +365,13 @@
     function startGame() {
         isGameOver = false;
         score = 0;
+        // Reset stats for new game
+        totalWordsFound = 0;
+        longWordsFound = 0;
+        longestWord = '';
+        currentStreak = 0;
+        bestStreak = 0;
+
         colourBanks = { red: INITIAL_BANK_LEVEL, blue: INITIAL_BANK_LEVEL, green: INITIAL_BANK_LEVEL };
         currentDrainIntervalMs = BASE_DRAIN_INTERVAL_MS;
         gameOverModal.classList.add('hidden');
@@ -399,11 +440,38 @@
       }
     }
 
+    function animateScore(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            element.textContent = Math.floor(progress * (end - start) + start).toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+
     function endGame() {
         isGameOver = true;
         clearInterval(drainInterval);
-        finalScoreEl.textContent = `Final Score: ${score}`;
+        
+        const longWordBonus = longWordsFound * BONUS_POINTS;
+        const streakBonus = bestStreak * BONUS_POINTS;
+        const finalScore = score + longWordBonus + streakBonus;
+
+        baseScoreDisplay.textContent = score.toLocaleString();
+        longWordsCount.textContent = longWordsFound;
+        longWordBonusDisplay.textContent = `+${longWordBonus.toLocaleString()}`;
+        bestStreakCount.textContent = bestStreak;
+        streakBonusDisplay.textContent = `+${streakBonus.toLocaleString()}`;
+        
+        totalWordsDisplay.textContent = totalWordsFound;
+        longestWordDisplay.textContent = longestWord.toUpperCase() || '-';
+
         gameOverModal.classList.remove('hidden');
+        animateScore(finalScoreEl, score, finalScore, 1000);
     }
 
     function startDrain(){ clearInterval(drainInterval); drainInterval = setInterval(drainBanks, currentDrainIntervalMs); }
@@ -528,16 +596,29 @@
         const word = currentSelection.map(t => t.querySelector('span').textContent.toLowerCase()).join('');
         if (word.length < MIN_WORD_LENGTH) {
             showMessage('Word too short!', 'text-yellow-400');
+            currentStreak = 0; // Reset streak on invalid attempt
             resetSelection();
             return;
         }
         if (bannedWords.has(word)) {
             showMessage('Word not allowed!', 'text-red-400');
+            currentStreak = 0; // Reset streak on invalid attempt
             resetSelection();
             return;
         }
 
         if (wordSet.has(word)) {
+            // --- STATS ---
+            totalWordsFound++;
+            currentStreak++;
+            bestStreak = Math.max(bestStreak, currentStreak);
+            if (word.length >= BONUS_WORD_LENGTH) {
+                longWordsFound++;
+            }
+            if (word.length > longestWord.length) {
+                longestWord = word;
+            }
+
             const colorCounts = { red: 0, blue: 0, green: 0 };
             currentSelection.forEach(el => colorCounts[grid[Number(el.dataset.index)].colorName]++);
             for (const color in colorCounts) {
@@ -558,6 +639,7 @@
             replaceUsedTiles();
         } else {
             showMessage('Not a valid word!', 'text-red-400');
+            currentStreak = 0; // Reset streak on invalid attempt
         }
         resetSelection();
         renderBanks();
