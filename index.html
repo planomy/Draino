@@ -139,7 +139,7 @@
     <div id="status-display" class="relative w-full my-2 md:my-4" style="height: 2.5rem;">
         <div id="speed-indicator-container" class="absolute inset-0 w-full h-full flex items-center justify-center opacity-0 transition-opacity duration-300">
             <span id="speed-up-text" class="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 text-cyan-400 transition-opacity duration-300 opacity-0 rounded-md">SPEED UP!</span>
-            <span id="speed-mph-display" class="text-yellow-400 text-base font-bold tracking-widest"></span>
+            <span id="speed-mph-display" class="text-base font-bold tracking-widest text-yellow-400"></span>
         </div>
         <p id="word-display" class="absolute inset-0 flex items-center justify-center font-bold tracking-widest text-gray-200 transition-opacity duration-200"></p>
         <p id="message" class="absolute inset-0 flex items-center justify-center text-base font-semibold opacity-0 transition-opacity duration-200"></p>
@@ -341,8 +341,6 @@
 
         if (gameMode === 'competition') {
             updateSpeedDisplay();
-            speedIndicatorContainer.classList.remove('opacity-0');
-            setTimeout(() => speedIndicatorContainer.classList.add('opacity-0'), 1500);
         }
 
         generateGrid();
@@ -411,7 +409,7 @@
     function startDrain(){ clearInterval(drainInterval); drainInterval = setInterval(drainBanks, currentDrainIntervalMs); }
 
     function checkCompetitionSpeedUp(oldScore, newScore) {
-        if (gameMode !== 'competition') return;
+        if (gameMode !== 'competition') return false;
         const oldThreshold = Math.floor(oldScore / COMPETITION_SCORE_THRESHOLD);
         const newThreshold = Math.floor(newScore / COMPETITION_SCORE_THRESHOLD);
         if (newThreshold > oldThreshold) {
@@ -419,21 +417,25 @@
             if (newInterval < currentDrainIntervalMs) {
                 currentDrainIntervalMs = newInterval;
                 
+                clearTimeout(messageTimeout);
                 wordDisplay.classList.add('opacity-0');
                 messageEl.classList.add('opacity-0');
+                
+                updateSpeedDisplay();
                 speedIndicatorContainer.classList.remove('opacity-0');
                 speedUpText.classList.remove('opacity-0');
                 
-                setTimeout(() => {
+                messageTimeout = setTimeout(() => {
                     speedUpText.classList.add('opacity-0');
                     speedIndicatorContainer.classList.add('opacity-0');
                     wordDisplay.classList.remove('opacity-0');
-                    updateSpeedDisplay();
-                }, 1500);
+                }, 800);
 
                 startDrain();
+                return true;
             }
         }
+        return false;
     }
 
     // --- Tile Selection Logic ---
@@ -457,7 +459,6 @@
         }
 
         if (targetElement && targetElement.closest('.tile')) {
-            e.preventDefault(); 
             isSelecting = true; 
             resetSelection(); 
             selectTile(targetElement); 
@@ -466,7 +467,10 @@
 
     function handleSelectionMove(e) {
         if (!isSelecting || isGameOver) return;
-        e.preventDefault();
+        
+        if (isSelecting) {
+            e.preventDefault();
+        }
 
         let targetElement;
         if (e.type === 'mouseover' || e.type === 'mousemove') {
@@ -544,11 +548,13 @@
             const points = isLongWord ? Math.floor(currentSelection.length * LONG_WORD_BONUS_MULTIPLIER) : currentSelection.length;
             const oldScore = score;
             score += points;
-            checkCompetitionSpeedUp(oldScore, score);
+            const didSpeedUp = checkCompetitionSpeedUp(oldScore, score);
 
-            let successMsg = `+${points} pts!`;
-            if (isLongWord) successMsg += ' (Bonus!)';
-            showMessage(successMsg, 'text-green-400');
+            if (!didSpeedUp) {
+                let successMsg = `+${points} pts!`;
+                if (isLongWord) successMsg += ' (Bonus!)';
+                showMessage(successMsg, 'text-green-400');
+            }
             replaceUsedTiles();
         } else {
             showMessage('Not a valid word!', 'text-red-400');
@@ -683,21 +689,14 @@
         }
     }
     function renderBanks(){
-      const isMobile = window.innerWidth < 768;
       for(const c of COLORS){
         const fill = document.getElementById(`${c.name}-bank`);
         if (fill) {
-            const percentage = (colourBanks[c.name] / MAX_BANK_LEVEL) * 100;
-            
-            fill.style.width = '';
-            fill.style.height = '';
-
-            if (isMobile) {
-              fill.style.width = `${percentage}%`;
-            } else {
-              fill.style.height = `${percentage}%`;
-            }
-
+          if (document.body.clientWidth <= 767) {
+            fill.style.width = `${(colourBanks[c.name] / MAX_BANK_LEVEL) * 100}%`;
+          } else {
+            fill.style.height = `${(colourBanks[c.name] / MAX_BANK_LEVEL) * 100}%`;
+          }
             fill.style.filter = `brightness(${0.7 + colourBanks[c.name] / MAX_BANK_LEVEL * 0.3})`;
         }
       }
@@ -707,24 +706,23 @@
     function showMessage(msg, cls){
       clearTimeout(messageTimeout);
 
-      // Remove the previous color class if it exists
       if (lastMessageColor) {
         messageEl.classList.remove(lastMessageColor);
       }
       
-      // Add the new color class and store it
       messageEl.classList.add(cls);
       lastMessageColor = cls;
       
       messageEl.textContent = msg;
       
       wordDisplay.classList.add('opacity-0');
+      speedIndicatorContainer.classList.add('opacity-0');
       messageEl.classList.remove('opacity-0');
       
       messageTimeout = setTimeout(() => { 
         messageEl.classList.add('opacity-0');
         wordDisplay.classList.remove('opacity-0');
-      }, 2000);
+      }, 800);
     }
     
     // --- Event Listeners (Robust Version) ---
@@ -732,19 +730,16 @@
     window.addEventListener('mousemove', handleSelectionMove);
     window.addEventListener('mouseup', handleSelectionEnd);
 
-    gridContainer.addEventListener('touchstart', handleSelectionStart, { passive: false });
+    gridContainer.addEventListener('touchstart', handleSelectionStart, { passive: true });
     window.addEventListener('touchmove', handleSelectionMove, { passive: false });
     window.addEventListener('touchend', handleSelectionEnd);
     window.addEventListener('touchcancel', handleSelectionEnd);
-    window.addEventListener('resize', renderBanks);
     
     restartButton.addEventListener('click', () => {
         gameOverModal.classList.add('hidden');
         startupScreen.classList.remove('hidden');
         gameContainer.classList.add('hidden');
         
-        // No need to manage speed indicator here, startGame handles it.
-
         const root = document.documentElement;
         root.style.setProperty('--bg-color', '#111827');
         root.style.setProperty('--text-color', '#f9fafb');
@@ -761,8 +756,4 @@
   </script>
 </body>
 </html>
-
-
-
-
 
